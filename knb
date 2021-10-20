@@ -360,7 +360,7 @@ function initialize-plotly-pod {
 	spec:
 	  containers:
 	  - name: plotly-orca
-	    image: quay.io/plotly/orca
+	    image: vmk-atds-registry-01.cern.ch/tbed/plotly/orca
 	  restartPolicy: Never
 	EOF
 
