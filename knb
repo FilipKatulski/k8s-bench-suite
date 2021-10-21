@@ -111,6 +111,11 @@ RUN_TEST_P2P_UDP="true"
 RUN_TEST_P2S_TCP="true"
 RUN_TEST_P2S_UDP="true"
 
+# PARAMETERS ADDED FOR ATLAS BENCHMARKS
+HOST_NETWORK_CLIENT="false"
+HOST_NETWORK_SERVER="false"
+
+
 export LC_ALL=C # Trick to no depend on locale
 BIN_AWK="awk"
 
@@ -183,6 +188,14 @@ function usage {
 
 	    -t <time-in-scd>
 	    --timeout <time-in-scd>     : Set the pod ready wait timeout in seconds (Default ${POD_WAIT_TIMEOUT})
+
+	 Added for ATLAS benchmarks :
+
+		-hns
+		--host-name-server          : Set server's hostNetwork to True (Default $HOST_NETWORK_SERVER) 
+
+		-hnc
+		--host-network-client		: Set client's hostNetwork to True (Default $HOST_NETWORK_CLIENT)
 
 	=====[ From Data mode ]====================================================
 
@@ -275,7 +288,7 @@ function run-client {
 		*) fatal "Unknown benchmark type '$2'" ;;
 	esac
 
-	info "Starting pod $POD_NAME on node $CLIENT_NODE"
+	info "Starting pod $POD_NAME on node $CLIENT_NODE with hostNetwork: $HOST_NETWORK_CLIENT"
 	cat <<-EOF | kubectl apply $NAMESPACEOPT -f - >/dev/null|| fatal "Cannot create pod $POD_NAME"
 	apiVersion: v1
 	kind: Pod
@@ -284,6 +297,7 @@ function run-client {
 	    app: $POD_NAME
 	  name: $POD_NAME
 	spec:
+	  hostNetwork: $HOST_NETWORK_CLIENT 
 	  containers:
 	  - name: iperf
 	    image: vmk-atds-registry-01.cern.ch/tbed/infrabuilder/bench-iperf3
@@ -642,6 +656,8 @@ function compute-text-result {
 	echo " Version         : $VERSION"
 	echo " Server          : $SERVER_NODE"
 	echo " Client          : $CLIENT_NODE"
+	echo " Srv hostNetwork : "  # TODO
+	echo " Clt hostNetwork : "  # TODO
 	echo " UDP Socket size : $SOCKET_BUFFER_SIZE"
 	echo "========================================================="
 	echo "  Discovered CPU         : $(cat $DATADIR/cpu)"
@@ -702,6 +718,8 @@ function source-data-from-dir {
 	$DEBUG && debug "BENCHMARK_DATE=$BENCHMARK_DATE"
 	$DEBUG && debug "SERVER_NODE=$SERVER_NODE"
 	$DEBUG && debug "CLIENT_NODE=$CLIENT_NODE"
+	$DEBUG && debug "HOST_NETWORK_SERVER=$HOST_NETWORK_SERVER"
+	$DEBUG && debug "HOST_NETWORK_CLIENT=$HOST_NETWORK_CLIENT"
 
 	$DEBUG && debug "MONITOR_SERVER_POD_NAME=$MONITOR_SERVER_POD_NAME"
 	$DEBUG && debug "MONITOR_CLIENT_POD_NAME=$MONITOR_CLIENT_POD_NAME"
@@ -836,6 +854,19 @@ do
 			[ "$1" = "" ] && fatal "$arg flag must be followed by a value"
 			POD_WAIT_TIMEOUT="$1"
 			info "Setting pod wait timeout to ${1}s"
+			;;
+
+		# OPTIONS ADDED FOR ATLAS BENCHMARKS
+
+		# Setting of hostNetwork parameter for pods
+		--host-network-client| -hnc)
+			HOST_NETWORK_CLIENT="true"
+			info "Setting hostNetwork client's parameter to True"
+			;;
+		
+		--host-network-server| -hns)
+			HOST_NETWORK_SERVER="true"
+			info "Setting hostNetwork client's parameter to True"
 			;;
 
 		#--- From Data - Mandatory flags --------------------------------------
@@ -1030,6 +1061,8 @@ VERSION="$VERSION"
 BENCHMARK_DATE="$BENCHMARK_DATE"
 SERVER_NODE="$SERVER_NODE"
 CLIENT_NODE="$CLIENT_NODE"
+HOST_NETWORK_SERVER="$HOST_NETWORK_SERVER"
+HOST_NETWORK_CLIENT="$HOST_NETWORK_CLIENT"
 
 SOCKET_BUFFER_SIZE="$SOCKET_BUFFER_SIZE"
 
@@ -1056,7 +1089,7 @@ function ctrl_c {
 #==============================================================================
 
 #--- Server monitor --------------------------------
-info "Deploying server monitor on node $SERVER_NODE"
+info "Deploying server monitor on node $SERVER_NODE with hostNetwork: $HOST_NETWORK_SERVER"
 cat <<EOF | kubectl apply $NAMESPACEOPT -f - >/dev/null|| fatal "Cannot create server monitor pod"
 apiVersion: v1
 kind: Pod
@@ -1065,6 +1098,7 @@ metadata:
     app: $MONITOR_SERVER_POD_NAME
   name: $MONITOR_SERVER_POD_NAME
 spec:
+  hostNetwork: $HOST_NETWORK_SERVER
   containers:
   - name: monitor
     image: vmk-atds-registry-01.cern.ch/tbed/infrabuilder/bench-custom-monitor
@@ -1079,7 +1113,7 @@ waitpod $MONITOR_SERVER_POD_NAME Running $POD_WAIT_TIMEOUT \
 	|| detect-pod-failure-reason-and-fatal $MONITOR_SERVER_POD_NAME "Failed to start server monitor pod"
 
 #--- Client monitor --------------------------------
-info "Deploying client monitor on node $CLIENT_NODE"
+info "Deploying client monitor on node $CLIENT_NODE with hostNetwork: $HOST_NETWORK_CLIENT"
 cat <<EOF | kubectl apply $NAMESPACEOPT -f - >/dev/null|| fatal "Cannot create client monitor pod"
 apiVersion: v1
 kind: Pod
@@ -1088,6 +1122,7 @@ metadata:
     app: $MONITOR_CLIENT_POD_NAME
   name: $MONITOR_CLIENT_POD_NAME
 spec:
+  hostNetwork: $HOST_NETWORK_CLIENT
   containers:
   - name: monitor
     image: vmk-atds-registry-01.cern.ch/tbed/infrabuilder/bench-custom-monitor
@@ -1105,7 +1140,7 @@ waitpod $MONITOR_CLIENT_POD_NAME Running $POD_WAIT_TIMEOUT \
 # Starting server
 #==============================================================================
 
-info "Deploying iperf server on node $SERVER_NODE"
+info "Deploying iperf server on node $SERVER_NODE with hostNetwork: $HOST_NETWORK_SERVER"
 cat <<EOF | kubectl apply $NAMESPACEOPT -f - >/dev/null|| fatal "Cannot create server pod"
 apiVersion: v1
 kind: Pod
@@ -1114,6 +1149,7 @@ metadata:
     app: $SERVER_POD_NAME
   name: $SERVER_POD_NAME
 spec:
+  hostNetwork: $HOST_NETWORK_SERVER
   containers:
   - name: iperf
     image: vmk-atds-registry-01.cern.ch/tbed/infrabuilder/netbench:server-iperf3
@@ -1183,6 +1219,12 @@ CNI_MTU=$(kubectl exec -i  $NAMESPACEOPT $SERVER_POD_NAME -- ip link \
 	| grep "UP,LOWER_UP" | grep -v LOOPBACK | grep -oE "mtu [0-9]*"| $BIN_AWK '{print $2}')
 $DEBUG && debug "CNI MTU is $CNI_MTU"
 echo $CNI_MTU > $DATADIR/mtu
+
+# DETECTIONS ADDED FOR ATLAS BENCHMARKS
+
+#--- Server hostNetwork -----------------------------------
+
+# TODO
 
 #==============================================================================
 # Benchmark tests
