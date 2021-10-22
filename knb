@@ -283,8 +283,8 @@ function run-client {
 	CMD=""
 	case $3 in
 		idle) CMD="sleep $BENCHMARK_DURATION; echo 0 0 0 0 0 0 0 receiver" ;;
-		udp) CMD="iperf3 -u -b 0 -c $TARGET -O 1 $SOCKET_BUFFER_FLAG -f m -t $BENCHMARK_DURATION" ;;
-		tcp) CMD="iperf3 -c $TARGET -O 1 -f m -t $BENCHMARK_DURATION" ;;
+		udp) CMD="iperf3 -V -u -b 0 -c $TARGET --cport 5201 -O 1 $SOCKET_BUFFER_FLAG -f m -t $BENCHMARK_DURATION" ;;
+		tcp) CMD="iperf3 -V -c $TARGET --cport 5201 -O 1 -f m -t $BENCHMARK_DURATION" ;;
 		*) fatal "Unknown benchmark type '$2'" ;;
 	esac
 
@@ -866,7 +866,7 @@ do
 		
 		--host-network-server| -hns)
 			HOST_NETWORK_SERVER="true"
-			info "Setting hostNetwork client's parameter to True"
+			info "Setting hostNetwork servers's parameter to True"
 			;;
 
 		#--- From Data - Mandatory flags --------------------------------------

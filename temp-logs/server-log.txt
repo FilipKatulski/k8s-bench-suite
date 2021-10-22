@@ -1,0 +1,62 @@
+-----------------------------------------------------------
+Server listening on 5201
+-----------------------------------------------------------
+Accepted connection from 192.168.83.192, port 47726
+[  5] local 192.168.143.169 port 5201 connected to 192.168.83.192 port 5201
+[ ID] Interval           Transfer     Bitrate
+[  5]   0.00-1.00   sec   106 MBytes   892 Mbits/sec                  (omitted)
+[  5]   0.00-1.00   sec   111 MBytes   928 Mbits/sec                  
+[  5]   1.00-2.00   sec   111 MBytes   930 Mbits/sec                  
+[  5]   2.00-3.00   sec   111 MBytes   930 Mbits/sec                  
+[  5]   3.00-4.00   sec   110 MBytes   925 Mbits/sec                  
+[  5]   4.00-5.00   sec   105 MBytes   884 Mbits/sec                  
+[  5]   5.00-6.00   sec   106 MBytes   887 Mbits/sec                  
+[  5]   6.00-7.00   sec   101 MBytes   849 Mbits/sec                  
+[  5]   7.00-8.00   sec   111 MBytes   929 Mbits/sec                  
+[  5]   8.00-9.00   sec   111 MBytes   929 Mbits/sec                  
+[  5]   9.00-10.00  sec   111 MBytes   930 Mbits/sec                  
+[  5]  10.00-11.00  sec   111 MBytes   931 Mbits/sec                  
+[  5]  11.00-12.00  sec   110 MBytes   923 Mbits/sec                  
+[  5]  12.00-13.00  sec   111 MBytes   929 Mbits/sec                  
+[  5]  13.00-14.00  sec   111 MBytes   930 Mbits/sec                  
+[  5]  14.00-15.00  sec   110 MBytes   924 Mbits/sec                  
+[  5]  15.00-16.00  sec   110 MBytes   925 Mbits/sec                  
+[  5]  16.00-17.00  sec   111 MBytes   927 Mbits/sec                  
+[  5]  17.00-18.00  sec   111 MBytes   927 Mbits/sec                  
+[  5]  18.00-19.00  sec   101 MBytes   848 Mbits/sec                  
+[  5]  19.00-20.00  sec  87.1 MBytes   731 Mbits/sec                  
+[  5]  20.00-20.04  sec  2.76 MBytes   574 Mbits/sec                  
+- - - - - - - - - - - - - - - - - - - - - - - - -
+[ ID] Interval           Transfer     Bitrate
+[  5]   0.00-20.04  sec  2.11 GBytes   905 Mbits/sec                  receiver
+-----------------------------------------------------------
+Server listening on 5201
+-----------------------------------------------------------
+Accepted connection from 192.168.83.192, port 48770
+[  5] local 192.168.143.169 port 5201 connected to 192.168.83.192 port 5201
+[ ID] Interval           Transfer     Bitrate         Jitter    Lost/Total Datagrams
+[  5]   0.00-1.00   sec  87.1 MBytes   730 Mbits/sec  0.068 ms  103327/168548 (61%)  (omitted)
+[  5]   0.00-1.00   sec  93.0 MBytes   780 Mbits/sec  0.031 ms  117089/186748 (63%)  
+[  5]   1.00-2.00   sec  91.0 MBytes   763 Mbits/sec  0.017 ms  123000/191131 (64%)  
+[  5]   2.00-3.00   sec  95.4 MBytes   801 Mbits/sec  0.032 ms  103290/174772 (59%)  
+[  5]   3.00-4.00   sec  99.1 MBytes   831 Mbits/sec  0.008 ms  113155/187360 (60%)  
+[  5]   4.00-5.00   sec   111 MBytes   928 Mbits/sec  0.026 ms  118112/200946 (59%)  
+[  5]   5.00-6.00   sec  87.2 MBytes   731 Mbits/sec  0.114 ms  111928/177275 (63%)  
+[  5]   6.00-7.00   sec  78.7 MBytes   661 Mbits/sec  0.072 ms  130215/189158 (69%)  
+[  5]   7.00-8.00   sec  87.7 MBytes   736 Mbits/sec  0.021 ms  133073/198745 (67%)  
+[  5]   8.00-9.00   sec  88.8 MBytes   745 Mbits/sec  0.019 ms  122719/189227 (65%)  
+[  5]   9.00-10.00  sec  88.1 MBytes   739 Mbits/sec  0.036 ms  122571/188580 (65%)  
+[  5]  10.00-11.00  sec  93.6 MBytes   785 Mbits/sec  0.017 ms  99140/169257 (59%)  
+[  5]  11.00-12.00  sec  97.9 MBytes   822 Mbits/sec  0.008 ms  110349/183699 (60%)  
+[  5]  12.00-13.00  sec  93.4 MBytes   783 Mbits/sec  0.048 ms  104351/174281 (60%)  
+[  5]  13.00-14.00  sec   101 MBytes   844 Mbits/sec  0.008 ms  124250/199629 (62%)  
+[  5]  14.00-15.00  sec   103 MBytes   867 Mbits/sec  0.033 ms  98463/175853 (56%)  
+[  5]  15.00-16.00  sec  71.2 MBytes   598 Mbits/sec  0.085 ms  129914/183266 (71%)  
+[  5]  16.00-17.00  sec  88.5 MBytes   742 Mbits/sec  0.062 ms  135874/202167 (67%)  
+[  5]  17.00-18.00  sec   106 MBytes   888 Mbits/sec  0.013 ms  110513/189804 (58%)  
+[  5]  18.00-19.00  sec   104 MBytes   872 Mbits/sec  0.018 ms  117300/195188 (60%)  
+[  5]  19.00-20.00  sec   102 MBytes   854 Mbits/sec  0.012 ms  111512/187776 (59%)  
+[  5]  20.00-20.24  sec  6.26 MBytes   215 Mbits/sec  0.010 ms  6334/11020 (57%)  
+- - - - - - - - - - - - - - - - - - - - - - - - -
+[ ID] Interval           Transfer     Bitrate         Jitter    Lost/Total Datagrams
+[  5]   0.00-20.24  sec  1.84 GBytes   782 Mbits/sec  0.010 ms  2343152/3755882 (62%)  receiver
