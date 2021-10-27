@@ -195,6 +195,17 @@ Mandatory flags :
     -V
     --version                   : Show current script version
 
+    Added for ATLAS benchmarks :
+
+		-hns
+		--host-name-server          : Set server's hostNetwork to True (Default $HOST_NETWORK_SERVER) 
+
+		-hnc
+		--host-network-client		: Set client's hostNetwork to True (Default $HOST_NETWORK_CLIENT)
+
+		-acmd
+		--additional-command		: Used to pass additional commands to run on the client pod
+
 =====[ Examples ]==========================================================
 
   Simple benchmark from "node1" to "node2" in verbose mode
