@@ -82,7 +82,7 @@ function waitpod {
 # Default config
 #==============================================================================
 
-VERSION=1.5.0
+VERSION=1.5.1
 GENERATOR="knb"
 BENCHMARK_DATE=$(date -u "+%Y-%m-%d %H:%M:%S")
 DEBUG=false
@@ -189,14 +189,6 @@ function usage {
 	    -t <time-in-scd>
 	    --timeout <time-in-scd>     : Set the pod ready wait timeout in seconds (Default ${POD_WAIT_TIMEOUT})
 
-	 Added for ATLAS benchmarks :
-
-		-hns
-		--host-name-server          : Set server's hostNetwork to True (Default $HOST_NETWORK_SERVER) 
-
-		-hnc
-		--host-network-client		: Set client's hostNetwork to True (Default $HOST_NETWORK_CLIENT)
-
 	=====[ From Data mode ]====================================================
 
 	Mandatory flags :
@@ -237,6 +229,17 @@ function usage {
 
 	    -V
 	    --version                   : Show current script version
+
+		Added for ATLAS benchmarks :
+
+		-hns
+		--host-name-server          : Set server's hostNetwork to True (Default $HOST_NETWORK_SERVER) 
+
+		-hnc
+		--host-network-client		: Set client's hostNetwork to True (Default $HOST_NETWORK_CLIENT)
+
+		-acmd
+		--additional-command		: Used to pass additional commands to run on the client pod
 
 	=====[ Examples ]==========================================================
 
@@ -283,8 +286,8 @@ function run-client {
 	CMD=""
 	case $3 in
 		idle) CMD="sleep $BENCHMARK_DURATION; echo 0 0 0 0 0 0 0 receiver" ;;
-		udp) CMD="iperf3 -V -u -b 0 -c $TARGET --cport 5201 -O 1 $SOCKET_BUFFER_FLAG -f m -t $BENCHMARK_DURATION" ;;
-		tcp) CMD="iperf3 -V -c $TARGET --cport 5201 -O 1 -f m -t $BENCHMARK_DURATION" ;;
+		udp) CMD="iperf3 -u -b 0 -c $TARGET -O 1 $SOCKET_BUFFER_FLAG -f m -t $BENCHMARK_DURATION $ADD_CMD" ;;
+		tcp) CMD="iperf3 -c $TARGET -O 1 -f m -t $BENCHMARK_DURATION $ADD_CMD" ;;
 		*) fatal "Unknown benchmark type '$2'" ;;
 	esac
 
@@ -856,19 +859,6 @@ do
 			info "Setting pod wait timeout to ${1}s"
 			;;
 
-		# OPTIONS ADDED FOR ATLAS BENCHMARKS
-
-		# Setting of hostNetwork parameter for pods
-		--host-network-client| -hnc)
-			HOST_NETWORK_CLIENT="true"
-			info "Setting hostNetwork client's parameter to True"
-			;;
-		
-		--host-network-server| -hns)
-			HOST_NETWORK_SERVER="true"
-			info "Setting hostNetwork servers's parameter to True"
-			;;
-
 		#--- From Data - Mandatory flags --------------------------------------
 
 		# Define the path to the data to read from
@@ -961,6 +951,26 @@ do
 		--version|-V)
 			echo "$VERSION"
 			exit
+			;;
+
+		# OPTIONS ADDED FOR ATLAS BENCHMARKS
+
+		# Setting of hostNetwork parameter for pods
+		--host-network-client| -hnc)
+			HOST_NETWORK_CLIENT="true"
+			info "Setting hostNetwork client's parameter to True"
+			;;
+		
+		--host-network-server| -hns)
+			HOST_NETWORK_SERVER="true"
+			info "Setting hostNetwork servers's parameter to True"
+			;;
+		# additional commands to be executed by the script
+		--additional-command| -acmd)
+			shift
+			[ "$1" = "" ] && fatal "$arg flag must be followed by a value"
+			ADD_CMD="$1"
+			info "Additional arguments are set to '${ADD_CMD}'"
 			;;
 
 		# Unknown flag
