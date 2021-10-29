@@ -1,5 +1,5 @@
 # k8s-bench-suite
-Bash scripts collection to benchmark kubernetes cluster performance
+Bash scripts collection to benchmark kubernetes cluster performance. Modified to meet ATLAS Kubernetes cluster's demands by Filip Katulski.
 
 ## [knb](knb) : Kubernetes Network Benchmark
 
@@ -201,10 +201,13 @@ Mandatory flags :
 		--host-name-server          : Set server's hostNetwork to True (Default $HOST_NETWORK_SERVER) 
 
 		-hnc
-		--host-network-client		: Set client's hostNetwork to True (Default $HOST_NETWORK_CLIENT)
+		--host-network-client		    : Set client's hostNetwork to True (Default $HOST_NETWORK_CLIENT)
 
 		-acmd
-		--additional-command		: Used to pass additional commands to run on the client pod
+		--additional-command		    : Used to pass additional commands to run on the client pod
+
+    -ccmd
+		--custom-command			      : Custom command to be executed by the Client Pod
 
 =====[ Examples ]==========================================================
 
