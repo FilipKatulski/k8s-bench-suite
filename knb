@@ -540,7 +540,12 @@ function compute-json-result {
 		then
 			echo "      \"udp\": {"
 			compute-json-result-for-pod $CLIENT_UDP_P2P_POD_NAME 8
-			echo "      }"
+			if [ "${CLIENT_CUSTOM_P2P_POD_NAME}" != "" ]
+			then
+				echo "      },"
+			else
+				echo "      }"
+			fi
 		fi
 		if [ "${CLIENT_CUSTOM_P2P_POD_NAME}" != "" ]
 		then
@@ -574,7 +579,12 @@ function compute-json-result {
 		then
 			echo "      \"udp\": {"
 			compute-json-result-for-pod $CLIENT_UDP_P2S_POD_NAME 8
-			echo "      }"
+			if [ "${CLIENT_CUSTOM_P2S_POD_NAME}" != "" ]
+			then
+				echo "      },"
+			else
+				echo "      }"
+			fi
 		fi
 		if [ "${CLIENT_CUSTOM_P2S_POD_NAME}" != "" ]
 		then
