@@ -652,9 +652,9 @@ function compute-yaml-result {
 			compute-yaml-result-for-pod $CLIENT_UDP_P2P_POD_NAME 6
 		fi
 		# Added for ATLAS benchmarks
-		if ["${CLIENT_CUSTOM_P2P_POD_NAME}" != ""]
+		if [ "${CLIENT_CUSTOM_P2P_POD_NAME}" != "" ]
 		then 
-			echo " custom:"
+			echo "    custom:"
 			compute-yaml-result-for-pod $CLIENT_CUSTOM_P2P_POD_NAME 6
 		fi 
 	fi
@@ -672,9 +672,9 @@ function compute-yaml-result {
 			compute-yaml-result-for-pod $CLIENT_UDP_P2S_POD_NAME 6
 		fi
 		# Added for ATLAS benchmarks
-		if ["${CLIENT_CUSTOM_P2S_POD_NAME}" != ""]
+		if [ "${CLIENT_CUSTOM_P2S_POD_NAME}" != "" ]
 		then 
-			echo " custom:"
+			echo "    custom:"
 			compute-yaml-result-for-pod $CLIENT_CUSTOM_P2S_POD_NAME 6
 		fi 
 	fi
@@ -727,9 +727,9 @@ function compute-text-result {
 			compute-text-result-for-pod $CLIENT_UDP_P2P_POD_NAME 6
 		fi
 		# Added for ATLAS benchmarks
-		if [ "${CLIENT_CUSTOM_P2P_POD_NAME}" != ""]
+		if [ "${CLIENT_CUSTOM_P2P_POD_NAME}" != "" ]
 		then
-			echo " CUSTOM :"
+			echo "    CUSTOM :"
 			compute-text-result-for-pod $CLIENT_CUSTOM_P2P_POD_NAME 6
 		fi
 	fi
@@ -748,9 +748,9 @@ function compute-text-result {
 			compute-text-result-for-pod $CLIENT_UDP_P2S_POD_NAME 6
 		fi
 		# Added for ATLAS benchmarks
-		if ["${CLIENT_CUSTOM_P2S_POD_NAME}" != ""]
+		if [ "${CLIENT_CUSTOM_P2S_POD_NAME}" != "" ]
 		then 
-			echo " CUSTOM :"
+			echo "    CUSTOM :"
 			compute-text-result-for-pod $CLIENT_CUSTOM_P2S_POD_NAME 6
 		fi 
 		echo "========================================================="
@@ -1370,7 +1370,7 @@ fi
 
 if [ "$CLIENT_CUSTOM_P2S_POD_NAME" != "" ]
 then
-	run-client $CLIENT_CUSTOM_P2S_OD_NAME $SERVER_SERVICE_NAME custom
+	run-client $CLIENT_CUSTOM_P2S_POD_NAME $SERVER_SERVICE_NAME custom
 else
 	info "Skipping P2S custom test"
 fi
