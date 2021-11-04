@@ -1,0 +1,20 @@
+Connecting to host knb-server-27241, port 5201
+[  5] local 10.193.12.128 port 55736 connected to 10.107.249.173 port 5201
+[ ID] Interval           Transfer     Bitrate         Total Datagrams
+[  5]   0.00-1.00   sec   170 MBytes  1430 Mbits/sec  122420  (omitted)
+[  5]   0.00-1.00   sec   174 MBytes  1464 Mbits/sec  125310  
+[  5]   1.00-2.00   sec   180 MBytes  1510 Mbits/sec  129270  
+[  5]   2.00-3.00   sec   181 MBytes  1520 Mbits/sec  130100  
+[  5]   3.00-4.00   sec   178 MBytes  1496 Mbits/sec  128110  
+[  5]   4.00-5.00   sec   183 MBytes  1533 Mbits/sec  131240  
+[  5]   5.00-6.00   sec   173 MBytes  1453 Mbits/sec  124390  
+[  5]   6.00-7.00   sec   178 MBytes  1490 Mbits/sec  127540  
+[  5]   7.00-8.00   sec   181 MBytes  1514 Mbits/sec  129670  
+[  5]   8.00-9.00   sec   182 MBytes  1529 Mbits/sec  130910  
+[  5]   9.00-10.00  sec   179 MBytes  1498 Mbits/sec  128260  
+- - - - - - - - - - - - - - - - - - - - - - - - -
+[ ID] Interval           Transfer     Bitrate         Jitter    Lost/Total Datagrams
+[  5]   0.00-10.00  sec  1.75 GBytes  1501 Mbits/sec  0.000 ms  0/1284800 (0%)  sender
+[  5]   0.00-10.24  sec  1.12 GBytes   937 Mbits/sec  0.014 ms  507373/1284797 (39%)  receiver
+
+iperf Done.

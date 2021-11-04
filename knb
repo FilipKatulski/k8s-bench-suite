@@ -92,7 +92,7 @@ CLIENT_NODE=""
 EXECID="$$"
 BENCHMARK_RUN_NAME="knb-$EXECID"
 NAMESPACEOPT=""
-POD_WAIT_TIMEOUT="30"
+POD_WAIT_TIMEOUT="60"
 BENCHMARK_DURATION="10"
 SOCKET_BUFFER_SIZE="auto"
 RESOURCE_TO_CLEAN_BEFORE_EXIT=""
@@ -294,7 +294,7 @@ function run-client {
 		idle) CMD="sleep $BENCHMARK_DURATION; echo 0 0 0 0 0 0 0 receiver" ;;
 		udp) CMD="iperf3 -u -b 0 -c $TARGET -O 1 $SOCKET_BUFFER_FLAG -f m -t $BENCHMARK_DURATION $ADD_CMD" ;;
 		tcp) CMD="iperf3 -c $TARGET -O 1 -f m -t $BENCHMARK_DURATION $ADD_CMD" ;;
-		custom) CMD="$CUSTOM_CMD" ;;
+		custom) CMD="iperf3 -c $TARGET $CUSTOM_CMD" ;;
 		*) fatal "Unknown benchmark type '$2'" ;;
 	esac
 
@@ -347,6 +347,10 @@ function run-client {
 	$DEBUG && debug "$POD_NAME Bandwidth = $(cat $DATADIR/$POD_NAME.bw)"
 
 	# Extracting monitoring
+	# TODO: Sometimes data extraction does not work, no records are saved and awk cannot compute the averages
+	# 		of cpu performance: "awk: cmd. line:4: fatal: division by zero attempted".
+	#		The 'NR' variable is equal to zero, thus division by 0 occurs.
+	#		Hot fixed with NR==0 check, might need a proper investigation later.
 	$DEBUG && debug "Writing $POD_NAME server metrics to $DATADIR/$POD_NAME-server.metrics"
 	kubectl exec -i $NAMESPACEOPT $MONITOR_SERVER_POD_NAME \
 		-- sh /stats.sh $STARTTIME $ENDTIME > $DATADIR/$POD_NAME-server.metrics
@@ -356,7 +360,11 @@ function run-client {
 	tail -n +2 $DATADIR/$POD_NAME-server.metrics | LC_ALL=C $BIN_AWK '{M+=$6;U+=$1;N+=$2;S+=$3;I+=$4;T+=$5;}
 		END {
 			print "cpu-user cpu-nice cpu-system cpu-iowait cpu-steal memory-used records-number";
-			printf "%.2f %.2f %.2f %.2f %.2f %d %d\n",U/NR,N/NR,S/NR,I/NR,T/NR,M/NR,NR
+			if (NR != 0 ){
+				printf "%.2f %.2f %.2f %.2f %.2f %d %d\n",U/NR,N/NR,S/NR,I/NR,T/NR,M/NR,NR 
+			}else{
+				print "NaN NaN NaN NaN NaN NaN NaN\n"
+			}
 		}' > $DATADIR/$POD_NAME-server.avg
 
 	$DEBUG && debug "Writing $POD_NAME client metrics to $DATADIR/$POD_NAME-client.metrics"
@@ -367,7 +375,11 @@ function run-client {
 	tail -n +2 $DATADIR/$POD_NAME-client.metrics | $BIN_AWK '{M+=$6;U+=$1;N+=$2;S+=$3;I+=$4;T+=$5;}
 		END {
 			print "cpu-user cpu-nice cpu-system cpu-iowait cpu-steal memory-used records-number";
-			printf "%.2f %.2f %.2f %.2f %.2f %d %d\n",U/NR,N/NR,S/NR,I/NR,T/NR,M/NR,NR
+			if (NR != 0){
+				printf "%.2f %.2f %.2f %.2f %.2f %d %d\n",U/NR,N/NR,S/NR,I/NR,T/NR,M/NR,NR
+			}else{
+				print "NaN NaN NaN NaN NaN NaN NaN\n"
+			}
 		}' > $DATADIR/$POD_NAME-client.avg
 }
 
