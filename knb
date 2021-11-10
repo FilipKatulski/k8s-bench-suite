@@ -46,7 +46,7 @@ function cleanandexit {
 	for i in $RESOURCE_TO_CLEAN_BEFORE_EXIT
 	do
 		$DEBUG && debug "Deleting resource $i"
-		kubectl delete $NAMESPACEOPT $i --wait=false >/dev/null
+		kubectl delete $NAMESPACEOPT $CUSTOM_KUBECFG $i --wait=false >/dev/null
 	done
 
 	# Cleaning temp directory
@@ -70,7 +70,7 @@ function waitpod {
 	$DEBUG && debug "Waiting for pod $POD to be $PHASE until $TMAX"
 	while [ "$(now)" -lt "$TMAX" ]
 	do
-		CURRENTPHASE=$(kubectl get --request-timeout 2s $NAMESPACEOPT pod $POD -o jsonpath={.status.phase})
+		CURRENTPHASE=$(kubectl get --request-timeout 2s $NAMESPACEOPT $CUSTOM_KUBECFG pod $POD -o jsonpath={.status.phase})
 		$DEBUG && debug "[$(now)/$TMAX] Pod $POD is in phase $CURRENTPHASE, waiting for $PHASE"
 		[ "$CURRENTPHASE" = "$PHASE" ] && return 0
 		sleep 1
@@ -92,7 +92,7 @@ CLIENT_NODE=""
 EXECID="$$"
 BENCHMARK_RUN_NAME="knb-$EXECID"
 NAMESPACEOPT=""
-POD_WAIT_TIMEOUT="60"
+POD_WAIT_TIMEOUT="10"
 BENCHMARK_DURATION="10"
 SOCKET_BUFFER_SIZE="auto"
 RESOURCE_TO_CLEAN_BEFORE_EXIT=""
@@ -118,6 +118,7 @@ DNS_POLICY="ClusterFirst"  # This is the actual default option used for dnsPolic
 CUSTOM_CMD=""
 RUN_TEST_P2P_CUSTOM="false"
 RUN_TEST_P2S_CUSTOM="false"
+CUSTOM_KUBECFG=""
 
 export LC_ALL=C # Trick to no depend on locale
 BIN_AWK="awk"
@@ -130,7 +131,7 @@ function detect-pod-failure-reason-and-fatal {
 	POD_NAME=$1
 	shift
 
-	CURRENTPHASE=$(kubectl get --request-timeout 2s $NAMESPACEOPT pod $POD_NAME -o jsonpath={.status.phase})
+	CURRENTPHASE=$(kubectl get --request-timeout 2s $NAMESPACEOPT $CUSTOM_KUBECFG pod $POD_NAME -o jsonpath={.status.phase})
 	$DEBUG && debug "Trying to detect pod failure for pod '$POD_NAME' in phase '$CURRENTPHASE'"
 	case $CURRENTPHASE in
 		"Pending")
@@ -138,7 +139,7 @@ function detect-pod-failure-reason-and-fatal {
 			;;
 		"Failed")
 			# Is it a window size problem in iperf ?
-			kubectl logs $NAMESPACEOPT $POD_NAME \
+			kubectl logs $NAMESPACEOPT $CUSTOM_KUBECFG $POD_NAME \
 				| grep "iperf3: error - unable to write to stream socket: Message too large" > /dev/null \
 				&& err "Iperf message was too large, you should try a lower value with flag '-sbs' (current value is : $SOCKET_BUFFER_SIZE)" && return 0
 
@@ -247,6 +248,9 @@ function usage {
 		-ccmd
 		--custom-command			: Custom command to be executed by the Client Pod
 
+		-kubecfg
+		--kubeconfig			: Specify path to a different kubeconfig file to be used by the script
+
 	=====[ Examples ]==========================================================
 
 	  Simple benchmark from "node1" to "node2" in verbose mode
@@ -299,7 +303,7 @@ function run-client {
 	esac
 
 	info "Starting pod $POD_NAME on node $CLIENT_NODE with hostNetwork: $HOST_NETWORK_CLIENT"
-	cat <<-EOF | kubectl apply $NAMESPACEOPT -f - >/dev/null|| fatal "Cannot create pod $POD_NAME"
+	cat <<-EOF | kubectl apply $NAMESPACEOPT $CUSTOM_KUBECFG -f - >/dev/null|| fatal "Cannot create pod $POD_NAME"
 	apiVersion: v1
 	kind: Pod
 	metadata:
@@ -324,7 +328,7 @@ function run-client {
 	RESOURCE_TO_CLEAN_BEFORE_EXIT="$RESOURCE_TO_CLEAN_BEFORE_EXIT pod/$POD_NAME"
 
 	# Waiting for Pod to be Running
-	kubectl wait $NAMESPACEOPT --for=condition=Ready pod/$POD_NAME \
+	kubectl wait $NAMESPACEOPT $CUSTOM_KUBECFG --for=condition=Ready pod/$POD_NAME \
 		--timeout=${POD_WAIT_TIMEOUT}s >/dev/null 2>/dev/null \
 		|| detect-pod-failure-reason-and-fatal $POD_NAME "Failed to start pod $POD_NAME until timeout"
 
@@ -342,7 +346,7 @@ function run-client {
 
 	# Extracting data
 	$DEBUG && debug "Writing $POD_NAME logs to $DATADIR/$POD_NAME.log"
-	kubectl logs $NAMESPACEOPT $POD_NAME > $DATADIR/$POD_NAME.log
+	kubectl logs $NAMESPACEOPT $CUSTOM_KUBECFG $POD_NAME > $DATADIR/$POD_NAME.log
 	grep receiver $DATADIR/$POD_NAME.log | $BIN_AWK '{print $7}' > $DATADIR/$POD_NAME.bw
 	$DEBUG && debug "$POD_NAME Bandwidth = $(cat $DATADIR/$POD_NAME.bw)"
 
@@ -352,7 +356,7 @@ function run-client {
 	#		The 'NR' variable is equal to zero, thus division by 0 occurs.
 	#		Hot fixed with NR==0 check, might need a proper investigation later.
 	$DEBUG && debug "Writing $POD_NAME server metrics to $DATADIR/$POD_NAME-server.metrics"
-	kubectl exec -i $NAMESPACEOPT $MONITOR_SERVER_POD_NAME \
+	kubectl exec -i $NAMESPACEOPT $CUSTOM_KUBECFG $MONITOR_SERVER_POD_NAME \
 		-- sh /stats.sh $STARTTIME $ENDTIME > $DATADIR/$POD_NAME-server.metrics
 
 	$DEBUG && debug "Computing $POD_NAME server metrics average to $DATADIR/$POD_NAME-server.avg"
@@ -368,7 +372,7 @@ function run-client {
 		}' > $DATADIR/$POD_NAME-server.avg
 
 	$DEBUG && debug "Writing $POD_NAME client metrics to $DATADIR/$POD_NAME-client.metrics"
-	kubectl exec -i $NAMESPACEOPT $MONITOR_CLIENT_POD_NAME \
+	kubectl exec -i $NAMESPACEOPT $CUSTOM_KUBECFG $MONITOR_CLIENT_POD_NAME \
 		-- sh /stats.sh $STARTTIME $ENDTIME > $DATADIR/$POD_NAME-client.metrics
 
 	$DEBUG && debug "Computing $POD_NAME client metrics average to $DATADIR/$POD_NAME-client.avg"
@@ -387,7 +391,7 @@ function initialize-plotly-pod {
 	POD_NAME=$1
 
 	info "Starting plotly-orca pod $POD_NAME"
-	cat <<-EOF | kubectl apply $NAMESPACEOPT -f - >/dev/null|| fatal "Cannot create pod $POD_NAME"
+	cat <<-EOF | kubectl apply $NAMESPACEOPT $CUSTOM_KUBECFG -f - >/dev/null|| fatal "Cannot create pod $POD_NAME"
 	apiVersion: v1
 	kind: Pod
 	metadata:
@@ -404,7 +408,7 @@ function initialize-plotly-pod {
 	RESOURCE_TO_CLEAN_BEFORE_EXIT="$RESOURCE_TO_CLEAN_BEFORE_EXIT pod/$POD_NAME"
 
 	# Waiting for Pod to be Running
-	kubectl wait $NAMESPACEOPT --for=condition=Ready pod/$POD_NAME \
+	kubectl wait $NAMESPACEOPT $CUSTOM_KUBECFG --for=condition=Ready pod/$POD_NAME \
 		--timeout=$((POD_WAIT_TIMEOUT + 120))s >/dev/null 2>/dev/null \
 		|| detect-pod-failure-reason-and-fatal $POD_NAME "Failed to start pod $POD_NAME until timeout"
 }
@@ -418,7 +422,7 @@ function plot-data {
 	do
 		$DEBUG && debug "Rendering graph from $tmpl"
 		compute-json-result | jq -M -f $tmpl |\
-		kubectl exec -i $NAMESPACEOPT $PLOT_POD_NAME -- orca graph \
+		kubectl exec -i $NAMESPACEOPT $CUSTOM_KUBECFG $PLOT_POD_NAME -- orca graph \
 		"$PLOT_GRAPH_ARGS" > ${PLOT_DIR}/"$(basename $tmpl .jq).png"
 	done
 }
@@ -1060,6 +1064,13 @@ do
 			info "Custom command is set to '${CUSTOM_CMD}'"
 			;;
 
+		--kubeconfig| -kubecfg)
+			shift
+			[ "$1" = "" ] && fatal "$arg flag must be followed by a value"
+			CUSTOM_KUBECFG="--kubeconfig $1"
+			info "Selected kubeconfig file is '${CUSTOM_KUBECFG}'"
+			;;
+
 		# Unknown flag
 		*) UNKNOWN_ARGLIST="$UNKNOWN_ARGLIST $arg" ;;
 	esac
@@ -1195,7 +1206,7 @@ function ctrl_c {
 
 #--- Server monitor --------------------------------
 info "Deploying server monitor on node $SERVER_NODE with hostNetwork: $HOST_NETWORK_SERVER"
-cat <<EOF | kubectl apply $NAMESPACEOPT -f - >/dev/null|| fatal "Cannot create server monitor pod"
+cat <<EOF | kubectl apply $NAMESPACEOPT $CUSTOM_KUBECFG -f - >/dev/null|| fatal "Cannot create server monitor pod"
 apiVersion: v1
 kind: Pod
 metadata:
@@ -1220,7 +1231,7 @@ waitpod $MONITOR_SERVER_POD_NAME Running $POD_WAIT_TIMEOUT \
 
 #--- Client monitor --------------------------------
 info "Deploying client monitor on node $CLIENT_NODE with hostNetwork: $HOST_NETWORK_CLIENT"
-cat <<EOF | kubectl apply $NAMESPACEOPT -f - >/dev/null|| fatal "Cannot create client monitor pod"
+cat <<EOF | kubectl apply $NAMESPACEOPT $CUSTOM_KUBECFG -f - >/dev/null|| fatal "Cannot create client monitor pod"
 apiVersion: v1
 kind: Pod
 metadata:
@@ -1248,7 +1259,7 @@ waitpod $MONITOR_CLIENT_POD_NAME Running $POD_WAIT_TIMEOUT \
 #==============================================================================
 
 info "Deploying iperf server on node $SERVER_NODE with hostNetwork: $HOST_NETWORK_SERVER"
-cat <<EOF | kubectl apply $NAMESPACEOPT -f - >/dev/null|| fatal "Cannot create server pod"
+cat <<EOF | kubectl apply $NAMESPACEOPT $CUSTOM_KUBECFG -f - >/dev/null|| fatal "Cannot create server pod"
 apiVersion: v1
 kind: Pod
 metadata:
@@ -1288,10 +1299,10 @@ EOF
 RESOURCE_TO_CLEAN_BEFORE_EXIT="$RESOURCE_TO_CLEAN_BEFORE_EXIT pod/$SERVER_POD_NAME svc/$SERVER_SERVICE_NAME"
 
 info "Waiting for server to be running"
-kubectl wait $NAMESPACEOPT --for=condition=Ready pod/$SERVER_POD_NAME --timeout=${POD_WAIT_TIMEOUT}s >/dev/null \
+kubectl wait $NAMESPACEOPT $CUSTOM_KUBECFG --for=condition=Ready pod/$SERVER_POD_NAME --timeout=${POD_WAIT_TIMEOUT}s >/dev/null \
 	|| detect-pod-failure-reason-and-fatal $SERVER_POD_NAME "Failed to start server pod"
 
-SERVER_IP=$(kubectl get $NAMESPACEOPT pod $SERVER_POD_NAME -o jsonpath={.status.podIP})
+SERVER_IP=$(kubectl get $NAMESPACEOPT $CUSTOM_KUBECFG pod $SERVER_POD_NAME -o jsonpath={.status.podIP})
 $DEBUG && debug "Server IP address is $SERVER_IP"
 
 #==============================================================================
@@ -1301,14 +1312,14 @@ $DEBUG && debug "Server IP address is $SERVER_IP"
 #--- CPU Detection ----------------------------------------
 
 info "Detecting CPU"
-DISCOVERED_CPU=$(kubectl exec -i  $NAMESPACEOPT $SERVER_POD_NAME -- grep "model name" /proc/cpuinfo | tail -n 1 | awk -F: '{print $2}')
+DISCOVERED_CPU=$(kubectl exec -i  $NAMESPACEOPT $CUSTOM_KUBECFG $SERVER_POD_NAME -- grep "model name" /proc/cpuinfo | tail -n 1 | awk -F: '{print $2}')
 $DEBUG && debug "Cpu is $DISCOVERED_CPU"
 echo $DISCOVERED_CPU > $DATADIR/cpu
 
 #--- Kernel Detection -------------------------------------
 
 info "Detecting Kernel"
-DISCOVERED_KERNEL=$(kubectl exec -i  $NAMESPACEOPT $SERVER_POD_NAME -- uname -r)
+DISCOVERED_KERNEL=$(kubectl exec -i  $NAMESPACEOPT $CUSTOM_KUBECFG $SERVER_POD_NAME -- uname -r)
 $DEBUG && debug "Kernel is $DISCOVERED_KERNEL"
 echo $DISCOVERED_KERNEL > $DATADIR/kernel
 
@@ -1323,7 +1334,7 @@ echo $DISCOVERED_K8S_VERSION > $DATADIR/k8s-version
 #--- MTU Detection ----------------------------------------
 
 info "Detecting CNI MTU"
-CNI_MTU=$(kubectl exec -i  $NAMESPACEOPT $SERVER_POD_NAME -- ip link \
+CNI_MTU=$(kubectl exec -i  $NAMESPACEOPT $CUSTOM_KUBECFG $SERVER_POD_NAME -- ip link \
 	| grep "UP,LOWER_UP" | grep -v LOOPBACK | grep -oE "mtu [0-9]*"| $BIN_AWK '{print $2}')
 $DEBUG && debug "CNI MTU is $CNI_MTU"
 echo $CNI_MTU > $DATADIR/mtu

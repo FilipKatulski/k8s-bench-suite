@@ -1,0 +1,10 @@
+nodes:
+  servers:
+    - pc-tbed-k8s-07.cern.ch
+    - pc-tbed-k8s-08.cern.ch
+    - pc-tbed-k8s-09.cern.ch
+  clients:
+    - pc-tbed-tpu-08001.cern.ch
+    - pc-tbed-tpu-08002.cern.ch
+    - pc-tbed-tpu-08003.cern.ch
+parameters:
