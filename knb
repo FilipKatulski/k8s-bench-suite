@@ -421,9 +421,9 @@ function plot-data {
 	for tmpl in $(dirname $0)/plotly-templates/*
 	do
 		$DEBUG && debug "Rendering graph from $tmpl"
+                echo "$PLOT_GRAPH_ARGS"
 		compute-json-result | jq -M -f $tmpl |\
-		kubectl exec -i $NAMESPACEOPT $CUSTOM_KUBECFG $PLOT_POD_NAME -- orca graph \
-		"$PLOT_GRAPH_ARGS" > ${PLOT_DIR}/"$(basename $tmpl .jq).png"
+		kubectl exec -i $NAMESPACEOPT $CUSTOM_KUBECFG $PLOT_POD_NAME -- orca graph "$PLOT_GRAPH_ARGS" > ${PLOT_DIR}/"$(basename $tmpl .jq).png"
 	done
 }
 
