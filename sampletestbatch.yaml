@@ -1,18 +1,22 @@
 nodes:
   servers:
-    - pc-tbed-k8s-07.cern.ch
-    - pc-tbed-k8s-08.cern.ch
-    - pc-tbed-k8s-09.cern.ch
+    - fkatulski-54dyjjojbpkc-node-0
+    #- pc-tbed-k8s-07.cern.ch
+    #- pc-tbed-k8s-08.cern.ch
+    #- pc-tbed-k8s-09.cern.ch
   clients:
-    - pc-tbed-tpu-08001.cern.ch
-    - pc-tbed-tpu-08002.cern.ch
-    - pc-tbed-tpu-08003.cern.ch
+    - fkatulski-54dyjjojbpkc-node-1
+    #- pc-tbed-tpu-08001.cern.ch
+    #- pc-tbed-tpu-08002.cern.ch
+    #- pc-tbed-tpu-08003.cern.ch
 parameters:
+  namespace:
+    knbtest
   basic-tests:
     - all
   custom-test:
     - "--cport 5201 -O 1 -f k -t 30"
-    - "--cport 5201 -O 2 -f m -t 10"
+    #- "--cport 5201 -O 2 -f m -t 10"
   optional:
     - -v
     - --debug
