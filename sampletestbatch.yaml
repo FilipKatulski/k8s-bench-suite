@@ -2,13 +2,13 @@ nodes:
   servers:
     #- fkatulski-54dyjjojbpkc-node-0
     - pc-tbed-k8s-07.cern.ch
-    - pc-tbed-k8s-08.cern.ch
-    - pc-tbed-k8s-09.cern.ch
+    #- pc-tbed-k8s-08.cern.ch
+    #- pc-tbed-k8s-09.cern.ch
   clients:
     #- fkatulski-54dyjjojbpkc-node-1
     - pc-tbed-tpu-08001.cern.ch
-    - pc-tbed-tpu-08002.cern.ch
-    - pc-tbed-tpu-08003.cern.ch
+    #- pc-tbed-tpu-08002.cern.ch
+    #- pc-tbed-tpu-08003.cern.ch
 parameters:
   namespace:
     knbtest
@@ -17,7 +17,7 @@ parameters:
     - tcp
   custom-tests:
     - "--cport 5201 -O 1 -f m -t 10"
-    - "--cport 5202 -O 1 -f m -t 10"
+    #- "--cport 5202 -O 1 -f m -t 10"
   optional:
     - -v
     - --debug
@@ -25,3 +25,5 @@ parameters:
     - -hns
   output-folder:
     testing101
+  kubeconfig-file:
+    "/afs/cern.ch/user/f/fkatulsk/public/tbed"

@@ -6,11 +6,23 @@ import yaml
 import time
 
 
-def run_command(data: dict):
+def display_help():
+    """
+    Displays the full help message for this script usage.
+    """
+    # TODO 
+    ...
+
+def run_tests(data: dict):
+    """
+    Runs tests specified in the yaml file, according to description.
+    :param data: dict with parsed parameters for tests.
+    """
     servers = []
     clients = []
     basic_tests = []
     custom_tests = []
+    kubeconfig_file = ''
     output_folder = ''
     optional = ''
 
@@ -26,25 +38,35 @@ def run_command(data: dict):
             basic_tests = ','.join(basic_tests)
         else: 
             basic_tests = 'all'
+        
         if 'custom-tests' in data['parameters'].keys():
             for x in data['parameters']['custom-tests']:
                 custom_tests.append(x)
         else:
-            custom_tests = False 
+            custom_tests = False
+
+        if 'kubeconfig-file' in data['parameters'].keys():
+            kubeconfig_file = data['parameters']['kubeconfig-file']
+        else:
+            kubeconfig_file = False
+         
         optional = data['parameters']['optional']
         optional = ' '.join(optional)
         output_folder = data['parameters']['output-folder']
         stop = time.time()
         print(stop - start)
     except KeyError:
-        print('One of the keys does not exits. Check the selected yaml file.\n')
+        print('One of the required keys does not exist. Check the selected yaml file.\n')
     
-    # Test names as combination <server>-<client>-<customtest>.knbtest'
+    if kubeconfig_file:
+        kubeconfig = ' -kubecfg ' + kubeconfig_file
+        optional = optional + kubeconfig
+
+    # Test names as combination '<server>-<client>-<customtest>.knbtest'
     for server in servers:
         for client in clients:
             if custom_tests:
                 for i, custom in enumerate(custom_tests):
-                    print(basic_tests, type(basic_tests))
                     filepath = './{folder}/{svr}_{clt}_custom{index}.knbdata'.format(folder=output_folder, 
                     svr=server, clt=client, index=i)
                     command = ' '.join(['./knb', '-sn', server, '-cn', client, '-n', namespace, '-ot', basic_tests,
@@ -60,6 +82,10 @@ def run_command(data: dict):
 
 
 def parse_yaml(filepath: str) -> dict:
+    """
+    This function parses provided yaml file with PyYAML library. 
+    :param filepath: String with filepath to specified yaml file with tests' description
+    """
     with open(filepath, "r") as stream:
         try:
             data = yaml.safe_load(stream)
@@ -87,7 +113,7 @@ def main (argv):
     
     print('Input file is "',inputfile, '"')
     test_data = parse_yaml(inputfile)
-    run_command(test_data)
+    run_tests(test_data)
 
 
 if __name__ == "__main__":
