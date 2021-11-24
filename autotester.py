@@ -3,6 +3,7 @@ import sys
 import getopt 
 import subprocess
 import yaml
+import argparse
 from time import sleep 
 try:
     from art import text2art
@@ -23,7 +24,7 @@ def display_header():
         sleep(1)
 
 
-def display_help():  # TODO 
+def display_help(): 
     """
     Displays the full help message for this script usage.
     """
@@ -43,7 +44,7 @@ Optional parameters:
 - optional
 - kubeconfig-file
 
-To see the full description of parameters required by knb script please use "./knb -h"
+To see the full description of parameters required by knb script please use "-k" flag.
 
 Input yaml file should follow this structure:
 _________________________________________________
@@ -77,6 +78,14 @@ parameters:
 _________________________________________________
     
     ''')
+
+
+def display_knb_help():
+    """
+    Displays knb shell script helper.
+    """
+    display_header()
+    subprocess.call(['./knb', '-h'], shell=True)
 
 
 def run_tests(data: dict):
@@ -170,11 +179,14 @@ def parse_yaml(filepath: str) -> dict:
 def main (argv):
     inputfile = ''
     try:
-        opts, args = getopt.getopt(argv, "hi:",["help", "input-file"])
+        opts, args = getopt.getopt(argv, "khi:pd:",["knb-help","help", "input-file", "plotting-mode", "plot-dir"])
     except getopt.GetoptError:
-        sys.exit("Autotester failed to parse arguments.\n")
+        sys.exit("Autotester failed to parse optipns.\n")
     for opt, arg in opts:
-        if opt == '-h':
+        if opt in ('-k', '--knb-help'):
+            display_knb_help()
+            sys.exit()
+        elif opt in ('-h', '--help'):
             display_help()
             sys.exit()
         elif opt in ('-i', '--input-file'):
@@ -182,7 +194,17 @@ def main (argv):
             print('Input file is "',inputfile, '"\n')
             test_data = parse_yaml(inputfile)
             run_tests(test_data)
+        # TODO Modify to use plotting mode 
+        else:
+            assert False, "unhandled option"
 
+def new_parser():
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument('-h', help="displays script's help")
+
+    args = parser.parse_args()
+    print(args.h)
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    new_parser()
+    #main(sys.argv[1:])
