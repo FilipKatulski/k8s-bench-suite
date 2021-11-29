@@ -212,17 +212,17 @@ def plot_data(inputconfig: dict):
     for filename in os.listdir(input_folder):
         if filename.endswith('.knbdata'):
             print(filename, type(filename))
-            output_folder = output_folder + '/' + filename
-            output_folder = output_folder[:-8]
-            print(output_folder)
+            output = output_folder + '/' + filename
+            output = output[:-8]
+            print(output)
             input_dir = input_folder + '/' + filename
             print(input_dir)
-            command = ' '.join(['./knb', '-n', namespace, '-fd', input_dir, '--plot', '--plot-dir', output_folder, optional])
+            command = ' '.join(['./knb', '-n', namespace, '-fd', input_dir, '--plot', '--plot-dir', output, optional])
             print(command)
             subprocess.call(command, shell=True)
+            #exit()
         else:
             continue
-    
 
 
 def main (argv):
