@@ -1,12 +1,12 @@
 parameters:
   input-folder:
-    testing101
+    testing101/oldtests
   namespace:
     knbtest
   optional:
     - -v
     - --debug
   output-folder:
-    "./testing101/plots"
+    "./testing101/oldtests/plots"
   kubeconfig-file:
     "/afs/cern.ch/user/f/fkatulsk/private/FKatulskiOpenStack.conf"

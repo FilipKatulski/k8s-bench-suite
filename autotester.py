@@ -220,7 +220,6 @@ def plot_data(inputconfig: dict):
             command = ' '.join(['./knb', '-n', namespace, '-fd', input_dir, '--plot', '--plot-dir', output_folder, optional])
             print(command)
             subprocess.call(command, shell=True)
-            exit()
         else:
             continue
     
