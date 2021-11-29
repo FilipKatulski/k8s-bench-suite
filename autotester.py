@@ -4,6 +4,7 @@ import getopt
 import subprocess
 import yaml
 import argparse
+from typing import Optional
 from time import sleep 
 try:
     from art import text2art
@@ -88,6 +89,20 @@ def display_knb_help():
     subprocess.call(['./knb', '-h'], shell=True)
 
 
+def parse_yaml(filepath: str) -> dict:
+    """
+    This function parses provided yaml file with PyYAML library. 
+    :param filepath: String with filepath to specified yaml file with tests' description
+    """
+    with open(filepath, "r") as stream:
+        try:
+            data = yaml.safe_load(stream)
+        except yaml.YAMLError as yerr:
+            print(yerr)
+            exit("Could not load the test file.\n")
+    return data
+
+
 def run_tests(data: dict):
     """
     Runs tests specified in the yaml file, according to description.
@@ -151,29 +166,64 @@ def run_tests(data: dict):
                     '-o data','-ccmd "', custom, '"', optional, '-f', filepath ])
                     logname = './{folder}/{svr}_{clt}_custom{index}.txt'.format(folder=output_folder, svr=server, 
                     clt=client, index=i)
-                    f = open(logname, 'w')
-                    subprocess.call(command, shell=True, stdout=f)
+                    #f = open(logname, 'w')
+                    subprocess.call(command, shell=True)
             else:
                 filepath = './{folder}/{svr}_{clt}.knbdata'.format(folder=output_folder, svr=server, clt=client)
                 command = ' '.join(['./knb', '-sn', server, '-cn', client, '-n', namespace, '-ot', basic_tests, 
                 '-o data', optional, '-f', filepath])
                 logname = './{folder}/{svr}_{clt}.txt'.format(folder=output_folder, svr=server, clt=client)
-                f = open(logname, 'w')
-                subprocess.call(command, shell=True, stdout=f)
+                #f = open(logname, 'w')
+                subprocess.call(command, shell=True)
 
 
-def parse_yaml(filepath: str) -> dict:
+# TODO 
+def plot_data(inputconfig: dict):
     """
-    This function parses provided yaml file with PyYAML library. 
-    :param filepath: String with filepath to specified yaml file with tests' description
+    This function provides 
+    :param inputfolder: String with inputfolder name to generate png files from.
     """
-    with open(filepath, "r") as stream:
-        try:
-            data = yaml.safe_load(stream)
-        except yaml.YAMLError as yerr:
-            print(yerr)
-            exit("Could not load the test file.\n")
-    return data
+    input_folder = ''
+    output_folder = ''
+    namespace = ''
+    optional = ''
+    kubecfg = ''
+
+    try:
+        input_folder = inputconfig['parameters']['input-folder']
+        print(inputconfig['parameters']['input-folder'], type(inputconfig['parameters']['input-folder']))
+        output_folder += inputconfig['parameters']['output-folder']
+        print(inputconfig['parameters']['output-folder'], type(inputconfig['parameters']['output-folder']))
+        namespace = inputconfig['parameters']['namespace']
+        print(namespace)
+
+        if 'optional' in inputconfig['parameters'].keys():
+            optional = inputconfig['parameters']['optional']
+            optional = ' '.join(optional)
+
+        if 'kubeconfig-file' in inputconfig['parameters'].keys():
+            kubeconfig_file = inputconfig['parameters']['kubeconfig-file']
+            kubeconfig = ' -kubecfg ' + kubeconfig_file
+            optional = optional + kubeconfig
+
+    except KeyError:
+        exit('One of the required keys does not exist.\nCheck the selected yaml and list of required parameters.\n')
+    
+    for filename in os.listdir(input_folder):
+        if filename.endswith('.knbdata'):
+            print(filename, type(filename))
+            output_folder = output_folder + '/' + filename
+            output_folder = output_folder[:-8]
+            print(output_folder)
+            input_dir = input_folder + '/' + filename
+            print(input_dir)
+            command = ' '.join(['./knb', '-n', namespace, '-fd', input_dir, '--plot', '--plot-dir', output_folder, optional])
+            print(command)
+            subprocess.call(command, shell=True)
+            exit()
+        else:
+            continue
+    
 
 
 def main (argv):
@@ -194,17 +244,48 @@ def main (argv):
             print('Input file is "',inputfile, '"\n')
             test_data = parse_yaml(inputfile)
             run_tests(test_data)
-        # TODO Modify to use plotting mode 
         else:
             assert False, "unhandled option"
 
-def new_parser():
+def argument_parser():
+    """
+    This function parses the arguments provided for the script.
+    """
+    def _is_valid_file(parser, arg):
+        if not os.path.exists(arg):
+            parser.error("The specified file does not exist.\n")
+        else:
+            return arg
+
     parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument('-h', help="displays script's help")
+    parser.add_argument('-h', '--help', action='store_true', help="displays autotester script help")
+    parser.add_argument('-k','--knb-help', action='store_true', help='displays knb script help')
+    parser.add_argument('-i', '--input', dest='input', required=False, metavar='FILE', 
+    type=lambda x: _is_valid_file(parser, x), 
+    help='input yaml file with test configuration or input folder for plotting')
+    parser.add_argument('-p', '--plot', action='store_true', help='create plots from selected folder')
+    parser.add_argument('-kubecfg', '--kube-config', dest='kubecfg', required=False, 
+    help='Speficied kubeconfig file used for plotting')
 
     args = parser.parse_args()
-    print(args.h)
+    
+    print(args)
+    if args.help:
+        display_help()
+    if args.knb_help:
+        display_knb_help()
+    if args.input:
+        if args.plot:
+            print('lel')
+            plot_config = parse_yaml(args.input)
+            plot_data(plot_config)
+        else:
+            print('lol')
+            test_data = parse_yaml(args.input)
+            #run_tests(test_data)
+    
+
 
 if __name__ == "__main__":
-    new_parser()
+    argument_parser()
     #main(sys.argv[1:])
