@@ -25,7 +25,7 @@ def display_header():
         print("\nknb autotester\n\n")
         sleep(1)
 
-
+# TODO
 def display_help(): 
     """
     Displays the full help message for this script usage.
@@ -75,6 +75,9 @@ nodes:
     - node-k8s-2
     - node-k8s-4
     - node-k8s-6
+    pairs:
+    - pc-tbed-k8s-07.cern.ch, pc-tbed-tpu-08001.cern.ch
+    - pc-tbed-k8s-08.cern.ch, pc-tbed-tpu-08002.cern.ch
 parameters:
   namespace:
     knbtest
@@ -177,16 +180,7 @@ def run_tests(data: dict):
             clients.append(x)
         
         #TODO change to 'pairs' instead of 'servers' and 'clients' 
-        if 'pairs' in data['nodes'].keys():
-            print(data['nodes']['pairs'], type(data['nodes']['pairs']))
-            pairs = data['nodes']['pairs']
-            for pair in pairs:
-                
-                pair = tuple(pair.split(', '))
-                print(pair, type(pair))
-                print(pair[0], type(pair[0]))
-                servers.append(pair[0])
-                clients.append(pair[1])
+        pairs = data['nodes']['pairs']
 
         namespace = data['parameters']['namespace']
 
@@ -219,25 +213,49 @@ def run_tests(data: dict):
         exit('One of the required keys does not exist.\nCheck the selected yaml and list of required parameters.\n')    
 
     # Test names as combination '<server>-<client>-<customtest>.knbtest'
-    for server in servers:
-        for client in clients:
-            if custom_tests:
-                for i, custom in enumerate(custom_tests):
-                    filepath = './{folder}/{svr}_{clt}_custom{index}.knbdata'.format(folder=output_folder, 
-                    svr=server, clt=client, index=i)
-                    command = ' '.join(['./knb', '-sn', server, '-cn', client, '-n', namespace, '-ot', basic_tests,
-                    '-o data','-ccmd "', custom, '"', optional, '-f', filepath ])
-                    logname = './{folder}/{svr}_{clt}_custom{index}.txt'.format(folder=output_folder, svr=server, 
-                    clt=client, index=i)
+    if servers and clients:
+        for server in servers:
+            for client in clients:
+                if custom_tests:
+                    for i, custom in enumerate(custom_tests):
+                        filepath = './{folder}/{svr}_{clt}_custom{index}.knbdata'.format(folder=output_folder, 
+                        svr=server, clt=client, index=i)
+                        command = ' '.join(['./knb', '-sn', server, '-cn', client, '-n', namespace, '-ot', basic_tests,
+                        '-o data','-ccmd "', custom, '"', optional, '-f', filepath ])
+                        logname = './{folder}/{svr}_{clt}_custom{index}.txt'.format(folder=output_folder, svr=server, 
+                        clt=client, index=i)
+                        #f = open(logname, 'w')
+                        #subprocess.call(command, shell=True)
+                else:
+                    filepath = './{folder}/{svr}_{clt}.knbdata'.format(folder=output_folder, svr=server, clt=client)
+                    command = ' '.join(['./knb', '-sn', server, '-cn', client, '-n', namespace, '-ot', basic_tests, 
+                    '-o data', optional, '-f', filepath])
+                    logname = './{folder}/{svr}_{clt}.txt'.format(folder=output_folder, svr=server, clt=client)
                     #f = open(logname, 'w')
                     #subprocess.call(command, shell=True)
-            else:
-                filepath = './{folder}/{svr}_{clt}.knbdata'.format(folder=output_folder, svr=server, clt=client)
-                command = ' '.join(['./knb', '-sn', server, '-cn', client, '-n', namespace, '-ot', basic_tests, 
-                '-o data', optional, '-f', filepath])
-                logname = './{folder}/{svr}_{clt}.txt'.format(folder=output_folder, svr=server, clt=client)
-                #f = open(logname, 'w')
-                #subprocess.call(command, shell=True)
+    
+    # TODO
+    if pairs:
+        for pair in pairs:
+                pair = tuple(pair.split(', '))
+                if custom_tests:
+                    for i, custom in enumerate(custom_tests):
+                        filepath = './{folder}/{svr}_{clt}_custom{index}.knbdata'.format(folder=output_folder, 
+                        svr=pair[0], clt=pair[1], index=i)
+                        command = ' '.join(['./knb', '-sn', pair[0], '-cn', pair[1], '-n', namespace, 
+                        '-ot', basic_tests, '-o data','-ccmd "', custom, '"', optional, '-f', filepath ])
+                        logname = './{folder}/{svr}_{clt}_custom{index}.txt'.format(folder=output_folder, svr=pair[0], 
+                        clt=pair[1], index=i)
+                        # f = open(logname, 'w')
+                        subprocess.call(command, shell=True)
+                else:
+                    filepath = './{folder}/{svr}_{clt}.knbdata'.format(folder=output_folder, svr=pair[0], clt=pair[1])
+                    command = ' '.join(['./knb', '-sn', pair[0], '-cn', pair[1], '-n', namespace, '-ot', basic_tests, 
+                    '-o data', optional, '-f', filepath])
+                    logname = './{folder}/{svr}_{clt}.txt'.format(folder=output_folder, svr=pair[0], clt=pair[1])
+                    # f = open(logname, 'w')
+                    subprocess.call(command, shell=True)                
+
 
 
 def plot_data(inputconfig: dict):
@@ -250,6 +268,8 @@ def plot_data(inputconfig: dict):
     namespace = ''
     optional = ''
     kubeconfig = ''
+
+    display_header()
 
     try:
         input_folder = inputconfig['parameters']['input-folder']
