@@ -187,7 +187,7 @@ def plot_data(inputconfig: dict):
     output_folder = ''
     namespace = ''
     optional = ''
-    kubecfg = ''
+    kubeconfig = ''
 
     try:
         input_folder = inputconfig['parameters']['input-folder']
@@ -213,14 +213,16 @@ def plot_data(inputconfig: dict):
         if filename.endswith('.knbdata'):
             print(filename, type(filename))
             output = output_folder + '/' + filename
+            # Deletes '.knbdata' suffix:
             output = output[:-8]
-            print(output)
             input_dir = input_folder + '/' + filename
-            print(input_dir)
+            
+            if not os.path.exists(output):
+                os.makedirs(output)
+
             command = ' '.join(['./knb', '-n', namespace, '-fd', input_dir, '--plot', '--plot-dir', output, optional])
             print(command)
             subprocess.call(command, shell=True)
-            #exit()
         else:
             continue
 

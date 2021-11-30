@@ -538,14 +538,14 @@ function compute-json-result {
 		echo "    },"
 	fi
 
-	if [ "${CLIENT_TCP_P2P_POD_NAME}${CLIENT_UDP_P2P_POD_NAME}$CLIENT_CUSTOM_P2P_POD_NAME" != "" ]
+	if [ "${CLIENT_TCP_P2P_POD_NAME}${CLIENT_UDP_P2P_POD_NAME}${CLIENT_CUSTOM_P2P_POD_NAME}" != "" ]
 	then
 		echo "    \"pod2pod\": {"
 		if [ "${CLIENT_TCP_P2P_POD_NAME}" != "" ]
 		then
 			echo "      \"tcp\": {"
 			compute-json-result-for-pod $CLIENT_TCP_P2P_POD_NAME 8
-			if [ "${CLIENT_UDP_P2P_POD_NAME}" != "" ]
+			if [ "${CLIENT_UDP_P2P_POD_NAME}${CLIENT_CUSTOM_P2P_POD_NAME}" != "" ]
 			then
 				echo "      },"
 			else
@@ -584,7 +584,7 @@ function compute-json-result {
 		then
 			echo "      \"tcp\": {"
 			compute-json-result-for-pod $CLIENT_TCP_P2S_POD_NAME 8
-			if [ "${CLIENT_UDP_P2S_POD_NAME}" != "" ]
+			if [ "${CLIENT_UDP_P2S_POD_NAME}${CLIENT_CUSTOM_P2S_POD_NAME}" != "" ]
 			then
 				echo "      },"
 			else
