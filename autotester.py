@@ -12,6 +12,7 @@ except ModuleNotFoundError:
     print("\n\n'Art' module is not installed\n")
     pass
 
+
 def display_header():
     """
     Displays python art header.
@@ -31,8 +32,24 @@ def display_help():
     """
     display_header()
     print('''knb is a network benchmark tool for Kubernetes CNI.
-Autotester script is used to automate running multiple knb tests one by one, according to provided yaml file.
-The output data is saved to a tar file. Test names as combination '<server>-<client>-<customtestindex>.knbtest'.
+Autotester script is used to automate running multiple knb tests one by one or create plots for multiple tests,
+according to provided yaml files.
+The output testing data is saved to a tar file. Test names as combination '<server>-<client>-<customtestindex>.knbtest'.
+The output plots are png files saved in the directory named after the test, at the specified location.
+
+==========
+PARAMETERS
+==========
+
+    -h, --help              |
+
+    -k, --knb-help          |
+
+
+
+=======
+TESTING
+=======
 
 Required parameters are:
 - server and client nodes
@@ -47,7 +64,7 @@ Optional parameters:
 
 To see the full description of parameters required by knb script please use "-k" flag.
 
-Input yaml file should follow this structure:
+Input test specification yaml file should follow this structure:
 _________________________________________________
 nodes:
   servers:
@@ -77,7 +94,39 @@ parameters:
   kubeconfig-file:
     "/path/to/kubeconfig/file"
 _________________________________________________
-    
+
+========
+PLOTTING
+========
+
+Required parameters are:
+- input-folder
+- output-folder
+- namespace
+
+Optional parameters are:
+- kubeconfig-file
+- optional
+
+To see the full description of parameters required by knb script please use "-k" flag.
+
+Input plotting specification yaml file should follow this structire:
+_________________________________________________
+parameters:
+  input-folder:
+    testing101
+  namespace:
+    knbtest
+  optional:
+    - -v
+    - --debug
+  output-folder:
+    "./testing101/plots"
+  kubeconfig-file:
+    "/afs/cern.ch/user/f/fkatulsk/private/FKatulskiOpenStack.conf"
+
+_________________________________________________
+
     ''')
 
 
@@ -106,13 +155,14 @@ def parse_yaml(filepath: str) -> dict:
 def run_tests(data: dict):
     """
     Runs tests specified in the yaml file, according to description.
-    :param data: dict with parsed parameters for tests.
+    :param data: dictionary with parsed parameters for tests.
     """
 
     display_header()
 
     servers = []
     clients = []
+    pairs = []
     basic_tests = []
     custom_tests = []
     kubeconfig_file = ''
@@ -126,6 +176,18 @@ def run_tests(data: dict):
         for x in data['nodes']['clients']:
             clients.append(x)
         
+        #TODO change to 'pairs' instead of 'servers' and 'clients' 
+        if 'pairs' in data['nodes'].keys():
+            print(data['nodes']['pairs'], type(data['nodes']['pairs']))
+            pairs = data['nodes']['pairs']
+            for pair in pairs:
+                
+                pair = tuple(pair.split(', '))
+                print(pair, type(pair))
+                print(pair[0], type(pair[0]))
+                servers.append(pair[0])
+                clients.append(pair[1])
+
         namespace = data['parameters']['namespace']
 
         output_folder = data['parameters']['output-folder']
@@ -151,7 +213,8 @@ def run_tests(data: dict):
             kubeconfig_file = data['parameters']['kubeconfig-file']
             kubeconfig = ' -kubecfg ' + kubeconfig_file
             optional = optional + kubeconfig
-        
+    
+    
     except KeyError:
         exit('One of the required keys does not exist.\nCheck the selected yaml and list of required parameters.\n')    
 
@@ -167,21 +230,20 @@ def run_tests(data: dict):
                     logname = './{folder}/{svr}_{clt}_custom{index}.txt'.format(folder=output_folder, svr=server, 
                     clt=client, index=i)
                     #f = open(logname, 'w')
-                    subprocess.call(command, shell=True)
+                    #subprocess.call(command, shell=True)
             else:
                 filepath = './{folder}/{svr}_{clt}.knbdata'.format(folder=output_folder, svr=server, clt=client)
                 command = ' '.join(['./knb', '-sn', server, '-cn', client, '-n', namespace, '-ot', basic_tests, 
                 '-o data', optional, '-f', filepath])
                 logname = './{folder}/{svr}_{clt}.txt'.format(folder=output_folder, svr=server, clt=client)
                 #f = open(logname, 'w')
-                subprocess.call(command, shell=True)
+                #subprocess.call(command, shell=True)
 
 
-# TODO 
 def plot_data(inputconfig: dict):
     """
     This function provides 
-    :param inputfolder: String with inputfolder name to generate png files from.
+    :param inputfolder: Dictionary with parameters for plotting
     """
     input_folder = ''
     output_folder = ''
@@ -227,30 +289,9 @@ def plot_data(inputconfig: dict):
             continue
 
 
-def main (argv):
-    inputfile = ''
-    try:
-        opts, args = getopt.getopt(argv, "khi:pd:",["knb-help","help", "input-file", "plotting-mode", "plot-dir"])
-    except getopt.GetoptError:
-        sys.exit("Autotester failed to parse optipns.\n")
-    for opt, arg in opts:
-        if opt in ('-k', '--knb-help'):
-            display_knb_help()
-            sys.exit()
-        elif opt in ('-h', '--help'):
-            display_help()
-            sys.exit()
-        elif opt in ('-i', '--input-file'):
-            inputfile = arg 
-            print('Input file is "',inputfile, '"\n')
-            test_data = parse_yaml(inputfile)
-            run_tests(test_data)
-        else:
-            assert False, "unhandled option"
-
-def argument_parser():
+def main():
     """
-    This function parses the arguments provided for the script.
+    The main function parses arguments provided for the script and runs specified functions.
     """
     def _is_valid_file(parser, arg):
         if not os.path.exists(arg):
@@ -265,28 +306,21 @@ def argument_parser():
     type=lambda x: _is_valid_file(parser, x), 
     help='input yaml file with test configuration or input folder for plotting')
     parser.add_argument('-p', '--plot', action='store_true', help='create plots from selected folder')
-    parser.add_argument('-kubecfg', '--kube-config', dest='kubecfg', required=False, 
-    help='Speficied kubeconfig file used for plotting')
 
     args = parser.parse_args()
     
-    print(args)
     if args.help:
         display_help()
     if args.knb_help:
         display_knb_help()
     if args.input:
         if args.plot:
-            print('lel')
             plot_config = parse_yaml(args.input)
             plot_data(plot_config)
         else:
-            print('lol')
-            test_data = parse_yaml(args.input)
-            #run_tests(test_data)
+            test_config = parse_yaml(args.input)
+            run_tests(test_config)
     
 
-
 if __name__ == "__main__":
-    argument_parser()
-    #main(sys.argv[1:])
+    main()
