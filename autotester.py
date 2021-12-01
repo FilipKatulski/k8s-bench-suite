@@ -31,6 +31,7 @@ def display_help():
     Displays the full help message for this script usage.
     """
     display_header()
+
     print('''knb is a network benchmark tool for Kubernetes CNI.
 Autotester script is used to automate running multiple knb tests one by one or create plots for multiple tests,
 according to provided yaml files.
@@ -41,22 +42,25 @@ The output plots are png files saved in the directory named after the test, at t
 PARAMETERS
 ==========
 
-    -h, --help              |
+    -h, --help                  | displays this  help message
 
-    -k, --knb-help          |
+    -k, --knb-help              | displays knb script help message
+    
+    -i, --input <filename>      | input yaml file with test or plotting configuration
 
-
+    -p, --plot                  | switches to plotting mode
 
 =======
 TESTING
 =======
 
 Required parameters are:
-- server and client nodes
+- "server, client" pairs 
 - namespace
 - output-folder
 
 Optional parameters:
+- individual specified servers and clients for grid testing
 - basic-tests
 - custom-tests
 - optional
@@ -67,6 +71,9 @@ To see the full description of parameters required by knb script please use "-k"
 Input test specification yaml file should follow this structure:
 _________________________________________________
 nodes:
+  pairs:
+    - server-1, client-1
+    - server-2, client-2
   servers:
     - node-k8s-1
     - node-k8s-2
@@ -75,9 +82,6 @@ nodes:
     - node-k8s-2
     - node-k8s-4
     - node-k8s-6
-    pairs:
-    - pc-tbed-k8s-07.cern.ch, pc-tbed-tpu-08001.cern.ch
-    - pc-tbed-k8s-08.cern.ch, pc-tbed-tpu-08002.cern.ch
 parameters:
   namespace:
     knbtest
@@ -174,12 +178,7 @@ def run_tests(data: dict):
     
     try:
         # Required parameters:
-        for x in data['nodes']['servers']:
-            servers.append(x)
-        for x in data['nodes']['clients']:
-            clients.append(x)
         
-        #TODO change to 'pairs' instead of 'servers' and 'clients' 
         pairs = data['nodes']['pairs']
 
         namespace = data['parameters']['namespace']
@@ -187,6 +186,14 @@ def run_tests(data: dict):
         output_folder = data['parameters']['output-folder']
 
         # Optional parameters:
+        if 'servers' in data['nodes'].keys():
+            for x in data['nodes']['servers']:
+                servers.append(x)
+        if 'clients' in data['nodes'].keys():
+            for x in data['nodes']['clients']:
+                clients.append(x)
+        
+
         if 'basic-tests' in data['parameters'].keys():
             basic_tests = data['parameters']['basic-tests']
             basic_tests = ','.join(basic_tests)
@@ -224,15 +231,17 @@ def run_tests(data: dict):
                         '-o data','-ccmd "', custom, '"', optional, '-f', filepath ])
                         logname = './{folder}/{svr}_{clt}_custom{index}.txt'.format(folder=output_folder, svr=server, 
                         clt=client, index=i)
+                        print("server-client: ", command)
                         #f = open(logname, 'w')
-                        #subprocess.call(command, shell=True)
+                        subprocess.call(command, shell=True)
                 else:
                     filepath = './{folder}/{svr}_{clt}.knbdata'.format(folder=output_folder, svr=server, clt=client)
                     command = ' '.join(['./knb', '-sn', server, '-cn', client, '-n', namespace, '-ot', basic_tests, 
                     '-o data', optional, '-f', filepath])
                     logname = './{folder}/{svr}_{clt}.txt'.format(folder=output_folder, svr=server, clt=client)
+                    print("server-client: ",command)
                     #f = open(logname, 'w')
-                    #subprocess.call(command, shell=True)
+                    subprocess.call(command, shell=True)
     
     # TODO
     if pairs:
@@ -246,6 +255,7 @@ def run_tests(data: dict):
                         '-ot', basic_tests, '-o data','-ccmd "', custom, '"', optional, '-f', filepath ])
                         logname = './{folder}/{svr}_{clt}_custom{index}.txt'.format(folder=output_folder, svr=pair[0], 
                         clt=pair[1], index=i)
+                        print("pairs: ", command)
                         # f = open(logname, 'w')
                         subprocess.call(command, shell=True)
                 else:
@@ -253,6 +263,7 @@ def run_tests(data: dict):
                     command = ' '.join(['./knb', '-sn', pair[0], '-cn', pair[1], '-n', namespace, '-ot', basic_tests, 
                     '-o data', optional, '-f', filepath])
                     logname = './{folder}/{svr}_{clt}.txt'.format(folder=output_folder, svr=pair[0], clt=pair[1])
+                    print("pairs: ", command)
                     # f = open(logname, 'w')
                     subprocess.call(command, shell=True)                
 
@@ -287,7 +298,6 @@ def plot_data(inputconfig: dict):
             kubeconfig_file = inputconfig['parameters']['kubeconfig-file']
             kubeconfig = ' -kubecfg ' + kubeconfig_file
             optional = optional + kubeconfig
-
     except KeyError:
         exit('One of the required keys does not exist.\nCheck the selected yaml and list of required parameters.\n')
     
