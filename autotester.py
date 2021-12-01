@@ -1,10 +1,7 @@
 import os
-import sys
-import getopt 
 import subprocess
 import yaml
 import argparse
-from typing import Optional
 from time import sleep 
 try:
     from art import text2art
@@ -25,7 +22,7 @@ def display_header():
         print("\nknb autotester\n\n")
         sleep(1)
 
-# TODO
+
 def display_help(): 
     """
     Displays the full help message for this script usage.
