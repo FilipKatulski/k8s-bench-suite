@@ -21,8 +21,8 @@ parameters:
   optional:
     - -v
     - --debug
-    - -hnc
-    - -hns
+    #- -hnc
+    #- -hns
   output-folder:
     testing101
   kubeconfig-file:
