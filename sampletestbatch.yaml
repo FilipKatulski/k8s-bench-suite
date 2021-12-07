@@ -24,6 +24,6 @@ parameters:
     #- -hnc
     #- -hns
   output-folder:
-    testing101
+    testing102
   kubeconfig-file:
     "/afs/cern.ch/user/f/fkatulsk/public/tbed"
