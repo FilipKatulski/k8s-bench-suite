@@ -285,7 +285,7 @@ This script needs valid **kubectl** setup and has **all requirements of [knb](kn
 
 To display usage, use the `-h` flag :
 
-'''bash
+```bash
 knb is a network benchmark tool for Kubernetes CNI.
 Autotester script is used to automate running multiple knb tests one by one or create plots for multiple tests,
 according to provided yaml files.
@@ -388,7 +388,7 @@ parameters:
 
 _________________________________________________
 
-'''
+```
 
 ### Plot examples
 
