@@ -1,5 +1,5 @@
 # k8s-bench-suite
-Bash scripts collection to benchmark kubernetes cluster performance. Modified to meet ATLAS Kubernetes cluster's demands by Filip Katulski.
+Bash and Python scripts collection to benchmark Kubernetes cluster performance. Modified to meet CERN ATLAS Kubernetes cluster's demands by Filip Katulski.
 
 ## [knb](knb) : Kubernetes Network Benchmark
 
@@ -15,6 +15,7 @@ Here are some highlights:
 - **Includes host cpu and ram monitoring** in benchmark report
 - Ability to create static graph images based on the result data using plotly/orca (see examples below)
 - No ssh access required, just an access to the target cluster through **standard kubectl**
+- Custom kubeconfig file can be specified as a parameter
 - **No need for high privileges**, the script will just launch very lightweight pods on two nodes.
 - Based on **very lights containers** images :
   - ![Docker Image Size (tag)](https://img.shields.io/docker/image-size/infrabuilder/bench-iperf3/latest) [infrabuilder/bench-iperf3](https://hub.docker.com/r/infrabuilder/bench-iperf3), is used to run benchmark tests
@@ -237,7 +238,159 @@ Mandatory flags :
   -------------------------------------------------------------------------
 
 ```
-### Graph examples
+
+## [KNB Autotester](autotester.py) : KNB Autotester
+
+Autotester is a Python script created to help automate multiple network tests. It runs knb script mutilple times, according to the config file. 
+
+Here are some highlights:
+
+- **Plain Python3 script** with very few dependencies
+- Runs knb script accordingly to the specified YAML configuration file
+- Ability to select multiple Server-Client pairs
+- Saves results in the specified location
+- Can run multiple custom tests
+- Can run specified combination of basic tests with all additional parameters possible
+- Option to create data plots from data folder specified by YAML configuration file
+- **No need for high privileges**
+
+### Requirements 
+
+This script needs valid **kubectl** setup and has **all requirements of [knb](knb) script** and additionally:
+
+- PyYAML
+- art (for art message)
+
+### Examples
+
+- Simple benchmark of files specified in **config.yaml** file:
+
+  ```bash
+  python3 autotester.py -i config.yaml
+  ```
+
+- Simple data plotting accordingly to **plotconf.yaml** file :
+
+  ```bash
+  python3 autotester.py -p -i plotconf.yaml 
+  ```
+
+- knb script usage message :
+
+  ```bash
+  python3 autotester.py -k
+  ```
+
+### Usage
+
+To display usage, use the `-h` flag :
+
+'''bash
+knb is a network benchmark tool for Kubernetes CNI.
+Autotester script is used to automate running multiple knb tests one by one or create plots for multiple tests,
+according to provided yaml files.
+The output testing data is saved to a tar file. Test names as combination '<server>-<client>-<customtestindex>.knbtest'.
+The output plots are png files saved in the directory named after the test, at the specified location.
+
+==========
+PARAMETERS
+==========
+
+    -h, --help                  | displays this  help message
+
+    -k, --knb-help              | displays knb script help message
+    
+    -i, --input <filename>      | input yaml file with test or plotting configuration
+
+    -p, --plot                  | switches to plotting mode
+
+=======
+TESTING
+=======
+
+Required parameters are:
+- "server, client" pairs 
+- namespace
+- output-folder
+
+Optional parameters:
+- individual specified servers and clients for grid testing
+- basic-tests
+- custom-tests
+- optional
+- kubeconfig-file
+
+To see the full description of parameters required by knb script please use "-k" flag.
+
+Input test specification yaml file should follow this structure:
+_________________________________________________
+nodes:
+  pairs:
+    - server-1, client-1
+    - server-2, client-2
+  servers:
+    - node-k8s-1
+    - node-k8s-2
+    - node-k8s-3
+  clients:
+    - node-k8s-2
+    - node-k8s-4
+    - node-k8s-6
+parameters:
+  namespace:
+    knbtest
+  basic-tests:
+    - p2p
+    - tcp
+  custom-tests:
+    - "--cport 5201 -O 1 -f m -t 10"
+    - "--cport 5202 -O 1 -f m -t 20"
+  optional:
+    - -v
+    - --debug
+    - -hnc
+    - -hns
+  output-folder:
+    testing101
+  kubeconfig-file:
+    "/path/to/kubeconfig/file"
+_________________________________________________
+
+========
+PLOTTING
+========
+
+Required parameters are:
+- input-folder
+- output-folder
+- namespace
+
+Optional parameters are:
+- kubeconfig-file
+- optional
+
+To see the full description of parameters required by knb script please use "-k" flag.
+
+Input plotting specification yaml file should follow this structire:
+_________________________________________________
+parameters:
+  input-folder:
+    testing101
+  namespace:
+    knbtest
+  optional:
+    - -v
+    - --debug
+  output-folder:
+    "./testing101/plots"
+  kubeconfig-file:
+    "/afs/cern.ch/user/f/fkatulsk/private/FKatulskiOpenStack.conf"
+
+_________________________________________________
+
+'''
+
+### Plot examples
 
 ![bandwidth](https://user-images.githubusercontent.com/21361354/102022246-d6e1d080-3d85-11eb-8ca6-37064ac3918f.png)
 ![cpu-usage](https://user-images.githubusercontent.com/21361354/102022247-d812fd80-3d85-11eb-820f-f5108cf8b930.png)
