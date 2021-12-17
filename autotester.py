@@ -190,7 +190,6 @@ def run_tests(data: dict):
             for x in data['nodes']['clients']:
                 clients.append(x)
         
-
         if 'basic-tests' in data['parameters'].keys():
             basic_tests = data['parameters']['basic-tests']
             basic_tests = ','.join(basic_tests)
@@ -211,7 +210,6 @@ def run_tests(data: dict):
             kubeconfig_file = data['parameters']['kubeconfig-file']
             kubeconfig = ' -kubecfg ' + kubeconfig_file
             optional = optional + kubeconfig
-    
     
     except KeyError:
         exit('One of the required keys does not exist.\nCheck the selected yaml and list of required parameters.\n')    
@@ -240,7 +238,6 @@ def run_tests(data: dict):
                     #f = open(logname, 'w')
                     subprocess.call(command, shell=True)
     
-    # TODO
     if pairs:
         for pair in pairs:
                 pair = tuple(pair.split(', '))
@@ -265,11 +262,10 @@ def run_tests(data: dict):
                     subprocess.call(command, shell=True)                
 
 
-
 def plot_data(inputconfig: dict):
     """
     This function provides 
-    :param inputfolder: Dictionary with parameters for plotting
+    :param inputconfig: Dictionary with parameters for plotting
     """
     input_folder = ''
     output_folder = ''
