@@ -1,0 +1,23 @@
+parameters:
+  input-folder:
+    testing101
+  namespace:
+    knbtest
+  optional:
+    - -v
+    - --debug
+  output-folder:
+    "./testing101/plots"
+  kubeconfig-file:
+    "/path/to/kubeconfig/file"
+
+
+
+
+
+
+
+
+
+
+

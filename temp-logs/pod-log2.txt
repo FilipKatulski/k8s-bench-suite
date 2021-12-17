@@ -1,0 +1,31 @@
+iperf 3.7
+Linux knb-client-tcp-p2p-20098 3.10.0-1160.36.2.el7.x86_64 #1 SMP Wed Jul 21 11:57:15 UTC 2021 x86_64
+Control connection MSS 1400
+Time: Wed, 27 Oct 2021 15:04:21 UTC
+Connecting to host 192.168.113.10, port 5201
+      Cookie: j3ffiljxth2qo25ovpogsngqewruny5gzzht
+      TCP MSS: 1400 (default)
+[  5] local 192.168.143.172 port 5201 connected to 192.168.113.10 port 5201
+Starting Test: protocol: TCP, 1 streams, 131072 byte blocks, omitting 1 seconds, 10 second test, tos 0
+[ ID] Interval           Transfer     Bitrate         Retr  Cwnd
+[  5]   0.00-1.00   sec   112 MBytes   942 Mbits/sec    2    231 KBytes       (omitted)
+[  5]   0.00-1.00   sec   111 MBytes   933 Mbits/sec    0    468 KBytes       
+[  5]   1.00-2.00   sec   112 MBytes   936 Mbits/sec    3    297 KBytes       
+[  5]   2.00-3.00   sec   111 MBytes   933 Mbits/sec    2    362 KBytes       
+[  5]   3.00-4.00   sec   111 MBytes   932 Mbits/sec   16    219 KBytes       
+[  5]   4.00-5.00   sec   111 MBytes   932 Mbits/sec    1    384 KBytes       
+[  5]   5.00-6.00   sec   112 MBytes   939 Mbits/sec    0    561 KBytes       
+[  5]   6.00-7.00   sec   111 MBytes   933 Mbits/sec    1    526 KBytes       
+[  5]   7.00-8.00   sec   111 MBytes   935 Mbits/sec    2    470 KBytes       
+[  5]   8.00-9.00   sec   112 MBytes   938 Mbits/sec    0    625 KBytes       
+[  5]   9.00-10.00  sec   111 MBytes   933 Mbits/sec    0    746 KBytes       
+- - - - - - - - - - - - - - - - - - - - - - - - -
+Test Complete. Summary Results:
+[ ID] Interval           Transfer     Bitrate         Retr
+[  5]   0.00-10.00  sec  1.09 GBytes   934 Mbits/sec   25             sender
+[  5]   0.00-10.04  sec  1.09 GBytes   934 Mbits/sec                  receiver
+CPU Utilization: local/sender 4.3% (0.2%u/4.0%s), remote/receiver 8.5% (0.8%u/7.6%s)
+snd_tcp_congestion cubic
+rcv_tcp_congestion cubic
+
+iperf Done.

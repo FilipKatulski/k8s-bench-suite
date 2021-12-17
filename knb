@@ -1,7 +1,7 @@
 #!/bin/bash
 ###################################################################
 # @Description : Kubernetes Network Benchmark
-# @Author      : Alexis Ducastel <alexis@infrabuilder.com>
+# @Author      : Alexis Ducastel <alexis@infrabuilder.com>, Filip Katulski <filip.katulski@cern.ch> 
 # @License     : MIT
 ###################################################################
 
@@ -46,7 +46,7 @@ function cleanandexit {
 	for i in $RESOURCE_TO_CLEAN_BEFORE_EXIT
 	do
 		$DEBUG && debug "Deleting resource $i"
-		kubectl delete $NAMESPACEOPT $i --wait=false >/dev/null
+		kubectl delete $NAMESPACEOPT $CUSTOM_KUBECFG $i --wait=false >/dev/null
 	done
 
 	# Cleaning temp directory
@@ -70,7 +70,7 @@ function waitpod {
 	$DEBUG && debug "Waiting for pod $POD to be $PHASE until $TMAX"
 	while [ "$(now)" -lt "$TMAX" ]
 	do
-		CURRENTPHASE=$(kubectl get --request-timeout 2s $NAMESPACEOPT pod $POD -o jsonpath={.status.phase})
+		CURRENTPHASE=$(kubectl get --request-timeout 2s $NAMESPACEOPT $CUSTOM_KUBECFG pod $POD -o jsonpath={.status.phase})
 		$DEBUG && debug "[$(now)/$TMAX] Pod $POD is in phase $CURRENTPHASE, waiting for $PHASE"
 		[ "$CURRENTPHASE" = "$PHASE" ] && return 0
 		sleep 1
@@ -82,7 +82,7 @@ function waitpod {
 # Default config
 #==============================================================================
 
-VERSION=1.5.0
+VERSION=1.5.1
 GENERATOR="knb"
 BENCHMARK_DATE=$(date -u "+%Y-%m-%d %H:%M:%S")
 DEBUG=false
@@ -92,7 +92,7 @@ CLIENT_NODE=""
 EXECID="$$"
 BENCHMARK_RUN_NAME="knb-$EXECID"
 NAMESPACEOPT=""
-POD_WAIT_TIMEOUT="30"
+POD_WAIT_TIMEOUT="10"
 BENCHMARK_DURATION="10"
 SOCKET_BUFFER_SIZE="auto"
 RESOURCE_TO_CLEAN_BEFORE_EXIT=""
@@ -111,6 +111,15 @@ RUN_TEST_P2P_UDP="true"
 RUN_TEST_P2S_TCP="true"
 RUN_TEST_P2S_UDP="true"
 
+# PARAMETERS ADDED FOR ATLAS BENCHMARKS
+HOST_NETWORK_CLIENT="false"
+HOST_NETWORK_SERVER="false"
+DNS_POLICY="ClusterFirst"  # This is the actual default option used for dnsPolicy, not "Default"
+CUSTOM_CMD=""
+RUN_TEST_P2P_CUSTOM="false"
+RUN_TEST_P2S_CUSTOM="false"
+CUSTOM_KUBECFG=""
+
 export LC_ALL=C # Trick to no depend on locale
 BIN_AWK="awk"
 
@@ -122,7 +131,7 @@ function detect-pod-failure-reason-and-fatal {
 	POD_NAME=$1
 	shift
 
-	CURRENTPHASE=$(kubectl get --request-timeout 2s $NAMESPACEOPT pod $POD_NAME -o jsonpath={.status.phase})
+	CURRENTPHASE=$(kubectl get --request-timeout 2s $NAMESPACEOPT $CUSTOM_KUBECFG pod $POD_NAME -o jsonpath={.status.phase})
 	$DEBUG && debug "Trying to detect pod failure for pod '$POD_NAME' in phase '$CURRENTPHASE'"
 	case $CURRENTPHASE in
 		"Pending")
@@ -130,7 +139,7 @@ function detect-pod-failure-reason-and-fatal {
 			;;
 		"Failed")
 			# Is it a window size problem in iperf ?
-			kubectl logs $NAMESPACEOPT $POD_NAME \
+			kubectl logs $NAMESPACEOPT $CUSTOM_KUBECFG $POD_NAME \
 				| grep "iperf3: error - unable to write to stream socket: Message too large" > /dev/null \
 				&& err "Iperf message was too large, you should try a lower value with flag '-sbs' (current value is : $SOCKET_BUFFER_SIZE)" && return 0
 
@@ -225,6 +234,23 @@ function usage {
 	    -V
 	    --version                   : Show current script version
 
+		Added for ATLAS benchmarks :
+
+		-hns
+		--host-name-server          : Set server's hostNetwork to True (Default $HOST_NETWORK_SERVER) 
+
+		-hnc
+		--host-network-client		: Set client's hostNetwork to True (Default $HOST_NETWORK_CLIENT)
+
+		-acmd
+		--additional-command		: Used to pass additional commands to run on the client pod
+
+		-ccmd
+		--custom-command			: Custom command to be executed by the Client Pod
+
+		-kubecfg
+		--kubeconfig			: Specify path to a different kubeconfig file to be used by the script
+
 	=====[ Examples ]==========================================================
 
 	  Simple benchmark from "node1" to "node2" in verbose mode
@@ -270,13 +296,14 @@ function run-client {
 	CMD=""
 	case $3 in
 		idle) CMD="sleep $BENCHMARK_DURATION; echo 0 0 0 0 0 0 0 receiver" ;;
-		udp) CMD="iperf3 -u -b 0 -c $TARGET -O 1 $SOCKET_BUFFER_FLAG -f m -t $BENCHMARK_DURATION" ;;
-		tcp) CMD="iperf3 -c $TARGET -O 1 -f m -t $BENCHMARK_DURATION" ;;
+		udp) CMD="iperf3 -u -b 0 -c $TARGET -O 1 $SOCKET_BUFFER_FLAG -f m -t $BENCHMARK_DURATION $ADD_CMD" ;;
+		tcp) CMD="iperf3 -c $TARGET -O 1 -f m -t $BENCHMARK_DURATION $ADD_CMD" ;;
+		custom) CMD="iperf3 -c $TARGET $CUSTOM_CMD" ;;
 		*) fatal "Unknown benchmark type '$2'" ;;
 	esac
 
-	info "Starting pod $POD_NAME on node $CLIENT_NODE"
-	cat <<-EOF | kubectl apply $NAMESPACEOPT -f - >/dev/null|| fatal "Cannot create pod $POD_NAME"
+	info "Starting pod $POD_NAME on node $CLIENT_NODE with hostNetwork: $HOST_NETWORK_CLIENT"
+	cat <<-EOF | kubectl apply $NAMESPACEOPT $CUSTOM_KUBECFG -f - >/dev/null|| fatal "Cannot create pod $POD_NAME"
 	apiVersion: v1
 	kind: Pod
 	metadata:
@@ -284,9 +311,11 @@ function run-client {
 	    app: $POD_NAME
 	  name: $POD_NAME
 	spec:
+	  hostNetwork: $HOST_NETWORK_CLIENT 
+	  dnsPolicy: $DNS_POLICY  # "Default" is not the default DNS policy. if dnsPolicy is not specified then it is "ClusterFirst"
 	  containers:
 	  - name: iperf
-	    image: infrabuilder/bench-iperf3
+	    image: vmk-atds-registry-01.cern.ch/tbed/infrabuilder/bench-iperf3
 	    args:
 	    - /bin/sh
 	    - -c
@@ -299,7 +328,7 @@ function run-client {
 	RESOURCE_TO_CLEAN_BEFORE_EXIT="$RESOURCE_TO_CLEAN_BEFORE_EXIT pod/$POD_NAME"
 
 	# Waiting for Pod to be Running
-	kubectl wait $NAMESPACEOPT --for=condition=Ready pod/$POD_NAME \
+	kubectl wait $NAMESPACEOPT $CUSTOM_KUBECFG --for=condition=Ready pod/$POD_NAME \
 		--timeout=${POD_WAIT_TIMEOUT}s >/dev/null 2>/dev/null \
 		|| detect-pod-failure-reason-and-fatal $POD_NAME "Failed to start pod $POD_NAME until timeout"
 
@@ -317,13 +346,17 @@ function run-client {
 
 	# Extracting data
 	$DEBUG && debug "Writing $POD_NAME logs to $DATADIR/$POD_NAME.log"
-	kubectl logs $NAMESPACEOPT $POD_NAME > $DATADIR/$POD_NAME.log
+	kubectl logs $NAMESPACEOPT $CUSTOM_KUBECFG $POD_NAME > $DATADIR/$POD_NAME.log
 	grep receiver $DATADIR/$POD_NAME.log | $BIN_AWK '{print $7}' > $DATADIR/$POD_NAME.bw
 	$DEBUG && debug "$POD_NAME Bandwidth = $(cat $DATADIR/$POD_NAME.bw)"
 
 	# Extracting monitoring
+	# TODO: Sometimes data extraction does not work, no records are saved and awk cannot compute the averages
+	# 		of cpu performance: "awk: cmd. line:4: fatal: division by zero attempted".
+	#		The 'NR' variable is equal to zero, thus division by 0 occurs.
+	#		Hot fixed with NR==0 check, might need a proper investigation later.
 	$DEBUG && debug "Writing $POD_NAME server metrics to $DATADIR/$POD_NAME-server.metrics"
-	kubectl exec -i $NAMESPACEOPT $MONITOR_SERVER_POD_NAME \
+	kubectl exec -i $NAMESPACEOPT $CUSTOM_KUBECFG $MONITOR_SERVER_POD_NAME \
 		-- sh /stats.sh $STARTTIME $ENDTIME > $DATADIR/$POD_NAME-server.metrics
 
 	$DEBUG && debug "Computing $POD_NAME server metrics average to $DATADIR/$POD_NAME-server.avg"
@@ -331,18 +364,26 @@ function run-client {
 	tail -n +2 $DATADIR/$POD_NAME-server.metrics | LC_ALL=C $BIN_AWK '{M+=$6;U+=$1;N+=$2;S+=$3;I+=$4;T+=$5;}
 		END {
 			print "cpu-user cpu-nice cpu-system cpu-iowait cpu-steal memory-used records-number";
-			printf "%.2f %.2f %.2f %.2f %.2f %d %d\n",U/NR,N/NR,S/NR,I/NR,T/NR,M/NR,NR
+			if (NR != 0 ){
+				printf "%.2f %.2f %.2f %.2f %.2f %d %d\n",U/NR,N/NR,S/NR,I/NR,T/NR,M/NR,NR 
+			}else{
+				print "NaN NaN NaN NaN NaN NaN NaN\n"
+			}
 		}' > $DATADIR/$POD_NAME-server.avg
 
 	$DEBUG && debug "Writing $POD_NAME client metrics to $DATADIR/$POD_NAME-client.metrics"
-	kubectl exec -i $NAMESPACEOPT $MONITOR_CLIENT_POD_NAME \
+	kubectl exec -i $NAMESPACEOPT $CUSTOM_KUBECFG $MONITOR_CLIENT_POD_NAME \
 		-- sh /stats.sh $STARTTIME $ENDTIME > $DATADIR/$POD_NAME-client.metrics
 
 	$DEBUG && debug "Computing $POD_NAME client metrics average to $DATADIR/$POD_NAME-client.avg"
 	tail -n +2 $DATADIR/$POD_NAME-client.metrics | $BIN_AWK '{M+=$6;U+=$1;N+=$2;S+=$3;I+=$4;T+=$5;}
 		END {
 			print "cpu-user cpu-nice cpu-system cpu-iowait cpu-steal memory-used records-number";
-			printf "%.2f %.2f %.2f %.2f %.2f %d %d\n",U/NR,N/NR,S/NR,I/NR,T/NR,M/NR,NR
+			if (NR != 0){
+				printf "%.2f %.2f %.2f %.2f %.2f %d %d\n",U/NR,N/NR,S/NR,I/NR,T/NR,M/NR,NR
+			}else{
+				print "NaN NaN NaN NaN NaN NaN NaN\n"
+			}
 		}' > $DATADIR/$POD_NAME-client.avg
 }
 
@@ -350,7 +391,7 @@ function initialize-plotly-pod {
 	POD_NAME=$1
 
 	info "Starting plotly-orca pod $POD_NAME"
-	cat <<-EOF | kubectl apply $NAMESPACEOPT -f - >/dev/null|| fatal "Cannot create pod $POD_NAME"
+	cat <<-EOF | kubectl apply $NAMESPACEOPT $CUSTOM_KUBECFG -f - >/dev/null|| fatal "Cannot create pod $POD_NAME"
 	apiVersion: v1
 	kind: Pod
 	metadata:
@@ -360,14 +401,14 @@ function initialize-plotly-pod {
 	spec:
 	  containers:
 	  - name: plotly-orca
-	    image: quay.io/plotly/orca
+	    image: vmk-atds-registry-01.cern.ch/tbed/plotly/orca
 	  restartPolicy: Never
 	EOF
 
 	RESOURCE_TO_CLEAN_BEFORE_EXIT="$RESOURCE_TO_CLEAN_BEFORE_EXIT pod/$POD_NAME"
 
 	# Waiting for Pod to be Running
-	kubectl wait $NAMESPACEOPT --for=condition=Ready pod/$POD_NAME \
+	kubectl wait $NAMESPACEOPT $CUSTOM_KUBECFG --for=condition=Ready pod/$POD_NAME \
 		--timeout=$((POD_WAIT_TIMEOUT + 120))s >/dev/null 2>/dev/null \
 		|| detect-pod-failure-reason-and-fatal $POD_NAME "Failed to start pod $POD_NAME until timeout"
 }
@@ -380,9 +421,9 @@ function plot-data {
 	for tmpl in $(dirname $0)/plotly-templates/*
 	do
 		$DEBUG && debug "Rendering graph from $tmpl"
+                echo "$PLOT_GRAPH_ARGS"
 		compute-json-result | jq -M -f $tmpl |\
-		kubectl exec -i $NAMESPACEOPT $PLOT_POD_NAME -- orca graph \
-		"$PLOT_GRAPH_ARGS" > ${PLOT_DIR}/"$(basename $tmpl .jq).png"
+		kubectl exec -i $NAMESPACEOPT $CUSTOM_KUBECFG $PLOT_POD_NAME -- orca graph "$PLOT_GRAPH_ARGS" > ${PLOT_DIR}/"$(basename $tmpl .jq).png"
 	done
 }
 
@@ -428,6 +469,15 @@ function compute-ibdbench-result {
 	# P2S UDP
 	echo -en "$(cat $DATADIR/$CLIENT_UDP_P2S_POD_NAME.bw)\t"
 	compute-ibdbench-metrics $CLIENT_UDP_P2S_POD_NAME
+
+	# Added for ATLAS benchmarks
+	# CUSTOM P2P
+	echo -en "$(cat $DATADIR/$CLIENT_CUSTOM_P2P_POD_NAME.bw)\t"
+	compute-ibdbench-metrics $CLIENT_CUSTOM_P2P_POD_NAME
+
+	# CUSTOM P2S
+	echo -en "$(cat $DATADIR/$CLIENT_CUSTOM_P2S_POD_NAME.bw)\t"
+	compute-ibdbench-metrics $CLIENT_CUSTOM_P2S_POD_NAME
 }
 
 function compute-json-result {
@@ -488,14 +538,14 @@ function compute-json-result {
 		echo "    },"
 	fi
 
-	if [ "${CLIENT_TCP_P2P_POD_NAME}${CLIENT_UDP_P2P_POD_NAME}" != "" ]
+	if [ "${CLIENT_TCP_P2P_POD_NAME}${CLIENT_UDP_P2P_POD_NAME}${CLIENT_CUSTOM_P2P_POD_NAME}" != "" ]
 	then
 		echo "    \"pod2pod\": {"
 		if [ "${CLIENT_TCP_P2P_POD_NAME}" != "" ]
 		then
 			echo "      \"tcp\": {"
 			compute-json-result-for-pod $CLIENT_TCP_P2P_POD_NAME 8
-			if [ "${CLIENT_UDP_P2P_POD_NAME}" != "" ]
+			if [ "${CLIENT_UDP_P2P_POD_NAME}${CLIENT_CUSTOM_P2P_POD_NAME}" != "" ]
 			then
 				echo "      },"
 			else
@@ -506,9 +556,20 @@ function compute-json-result {
 		then
 			echo "      \"udp\": {"
 			compute-json-result-for-pod $CLIENT_UDP_P2P_POD_NAME 8
-			echo "      }"
+			if [ "${CLIENT_CUSTOM_P2P_POD_NAME}" != "" ]
+			then
+				echo "      },"
+			else
+				echo "      }"
+			fi
 		fi
-		if [ "${CLIENT_TCP_P2S_POD_NAME}" != "" ] || [ "${CLIENT_UDP_P2S_POD_NAME}" != "" ]
+		if [ "${CLIENT_CUSTOM_P2P_POD_NAME}" != "" ]
+		then
+			echo "      \"custom\": {"
+			compute-json-result-for-pod $CLIENT_CUSTOM_P2P_POD_NAME 8
+			echo "      }"
+		fi 
+		if [ "${CLIENT_TCP_P2S_POD_NAME}" != "" ] || [ "${CLIENT_UDP_P2S_POD_NAME}" != "" ] || [ "${CLIENT_CUSTOM_P2S_POD_NAME}" != "" ]
 		then
 			echo "    },"
 		else
@@ -516,14 +577,14 @@ function compute-json-result {
 		fi
 	fi
 
-	if [ "${CLIENT_TCP_P2S_POD_NAME}${CLIENT_UDP_P2S_POD_NAME}" != "" ]
+	if [ "${CLIENT_TCP_P2S_POD_NAME}${CLIENT_UDP_P2S_POD_NAME}${CLIENT_CUSTOM_P2S_POD_NAME}" != "" ]
 	then
 		echo "    \"pod2svc\": {"
 		if [ "${CLIENT_TCP_P2S_POD_NAME}" != "" ]
 		then
 			echo "      \"tcp\": {"
 			compute-json-result-for-pod $CLIENT_TCP_P2S_POD_NAME 8
-			if [ "${CLIENT_UDP_P2S_POD_NAME}" != "" ]
+			if [ "${CLIENT_UDP_P2S_POD_NAME}${CLIENT_CUSTOM_P2S_POD_NAME}" != "" ]
 			then
 				echo "      },"
 			else
@@ -534,6 +595,17 @@ function compute-json-result {
 		then
 			echo "      \"udp\": {"
 			compute-json-result-for-pod $CLIENT_UDP_P2S_POD_NAME 8
+			if [ "${CLIENT_CUSTOM_P2S_POD_NAME}" != "" ]
+			then
+				echo "      },"
+			else
+				echo "      }"
+			fi
+		fi
+		if [ "${CLIENT_CUSTOM_P2S_POD_NAME}" != "" ]
+		then
+			echo "      \"custom\": {"
+			compute-json-result-for-pod $CLIENT_CUSTOM_P2S_POD_NAME 8
 			echo "      }"
 		fi
 		echo "    }"
@@ -592,7 +664,7 @@ function compute-yaml-result {
 		echo "  idle:"
 		compute-yaml-result-for-pod $IDLE_POD_NAME 4
 	fi
-	if [ "${CLIENT_TCP_P2P_POD_NAME}${CLIENT_UDP_P2P_POD_NAME}" != "" ]
+	if [ "${CLIENT_TCP_P2P_POD_NAME}${CLIENT_UDP_P2P_POD_NAME}${CLIENT_CUSTOM_P2P_POD_NAME}" != "" ]
 	then
 		echo "  pod2pod:"
 		if [ "${CLIENT_TCP_P2P_POD_NAME}" != "" ]
@@ -605,8 +677,14 @@ function compute-yaml-result {
 			echo "    udp:"
 			compute-yaml-result-for-pod $CLIENT_UDP_P2P_POD_NAME 6
 		fi
+		# Added for ATLAS benchmarks
+		if [ "${CLIENT_CUSTOM_P2P_POD_NAME}" != "" ]
+		then 
+			echo "    custom:"
+			compute-yaml-result-for-pod $CLIENT_CUSTOM_P2P_POD_NAME 6
+		fi 
 	fi
-	if [ "${CLIENT_TCP_P2S_POD_NAME}${CLIENT_UDP_P2S_POD_NAME}" != "" ]
+	if [ "${CLIENT_TCP_P2S_POD_NAME}${CLIENT_UDP_P2S_POD_NAME}${CLIENT_CUSTOM_P2S_POD_NAME}" != "" ]
 	then
 		echo "  pod2svc:"
 		if [ "${CLIENT_TCP_P2S_POD_NAME}" != "" ]
@@ -619,6 +697,12 @@ function compute-yaml-result {
 			echo "    udp:"
 			compute-yaml-result-for-pod $CLIENT_UDP_P2S_POD_NAME 6
 		fi
+		# Added for ATLAS benchmarks
+		if [ "${CLIENT_CUSTOM_P2S_POD_NAME}" != "" ]
+		then 
+			echo "    custom:"
+			compute-yaml-result-for-pod $CLIENT_CUSTOM_P2S_POD_NAME 6
+		fi 
 	fi
 }
 
@@ -642,6 +726,8 @@ function compute-text-result {
 	echo " Version         : $VERSION"
 	echo " Server          : $SERVER_NODE"
 	echo " Client          : $CLIENT_NODE"
+	echo " Srv hostNetwork : "  # TODO
+	echo " Clt hostNetwork : "  # TODO
 	echo " UDP Socket size : $SOCKET_BUFFER_SIZE"
 	echo "========================================================="
 	echo "  Discovered CPU         : $(cat $DATADIR/cpu)"
@@ -653,7 +739,7 @@ function compute-text-result {
 		echo "  Idle :"
 		compute-text-result-for-pod $IDLE_POD_NAME 4
 	fi
-	if [ "${CLIENT_TCP_P2P_POD_NAME}${CLIENT_UDP_P2P_POD_NAME}" != "" ]
+	if [ "${CLIENT_TCP_P2P_POD_NAME}${CLIENT_UDP_P2P_POD_NAME}${CLIENT_CUSTOM_P2P_POD_NAME}" != "" ]
 	then
 		echo "  Pod to pod :"
 		if [ "${CLIENT_TCP_P2P_POD_NAME}" != "" ]
@@ -666,9 +752,15 @@ function compute-text-result {
 			echo "    UDP :"
 			compute-text-result-for-pod $CLIENT_UDP_P2P_POD_NAME 6
 		fi
+		# Added for ATLAS benchmarks
+		if [ "${CLIENT_CUSTOM_P2P_POD_NAME}" != "" ]
+		then
+			echo "    CUSTOM :"
+			compute-text-result-for-pod $CLIENT_CUSTOM_P2P_POD_NAME 6
+		fi
 	fi
 
-	if [ "${CLIENT_TCP_P2S_POD_NAME}${CLIENT_UDP_P2S_POD_NAME}" != "" ]
+	if [ "${CLIENT_TCP_P2S_POD_NAME}${CLIENT_UDP_P2S_POD_NAME}${CLIENT_CUSTOM_P2S_POD_NAME}" != "" ]
 	then
 		echo "  Pod to Service :"
 		if [ "${CLIENT_TCP_P2S_POD_NAME}" != "" ]
@@ -681,6 +773,12 @@ function compute-text-result {
 			echo "    UDP :"
 			compute-text-result-for-pod $CLIENT_UDP_P2S_POD_NAME 6
 		fi
+		# Added for ATLAS benchmarks
+		if [ "${CLIENT_CUSTOM_P2S_POD_NAME}" != "" ]
+		then 
+			echo "    CUSTOM :"
+			compute-text-result-for-pod $CLIENT_CUSTOM_P2S_POD_NAME 6
+		fi 
 		echo "========================================================="
 	fi
 }
@@ -702,6 +800,8 @@ function source-data-from-dir {
 	$DEBUG && debug "BENCHMARK_DATE=$BENCHMARK_DATE"
 	$DEBUG && debug "SERVER_NODE=$SERVER_NODE"
 	$DEBUG && debug "CLIENT_NODE=$CLIENT_NODE"
+	$DEBUG && debug "HOST_NETWORK_SERVER=$HOST_NETWORK_SERVER"
+	$DEBUG && debug "HOST_NETWORK_CLIENT=$HOST_NETWORK_CLIENT"
 
 	$DEBUG && debug "MONITOR_SERVER_POD_NAME=$MONITOR_SERVER_POD_NAME"
 	$DEBUG && debug "MONITOR_CLIENT_POD_NAME=$MONITOR_CLIENT_POD_NAME"
@@ -711,6 +811,8 @@ function source-data-from-dir {
 	$DEBUG && debug "CLIENT_UDP_P2P_POD_NAME=$CLIENT_UDP_P2P_POD_NAME"
 	$DEBUG && debug "CLIENT_TCP_P2S_POD_NAME=$CLIENT_TCP_P2S_POD_NAME"
 	$DEBUG && debug "CLIENT_UDP_P2S_POD_NAME=$CLIENT_UDP_P2S_POD_NAME"
+	$DEBUG && debug "CLIENT_CUSTOM_P2P_POD_NAME=$CLIENT_CUSTOM_P2P_POD_NAME"
+	$DEBUG && debug "CLIENT_CUSTOM_P2S_POD_NAME=$CLIENT_CUSTOM_P2S_POD_NAME"
 }
 
 #==============================================================================
@@ -932,6 +1034,43 @@ do
 			exit
 			;;
 
+		# OPTIONS ADDED FOR ATLAS BENCHMARKS
+
+		# Setting of hostNetwork parameter for pods
+		--host-network-client| -hnc)
+			HOST_NETWORK_CLIENT="true"
+			DNS_POLICY="ClusterFirstWithHostNet"
+			info "Setting hostNetwork client's parameter to True"
+			;;
+		
+		--host-network-server| -hns)
+			HOST_NETWORK_SERVER="true"
+			DNS_POLICY="ClusterFirstWithHostNet"
+			info "Setting hostNetwork servers's parameter to True"
+			;;
+		# additional commands to be executed by the script
+		--additional-command| -acmd)
+			shift
+			[ "$1" = "" ] && fatal "$arg flag must be followed by a value"
+			ADD_CMD="$1"
+			info "Additional arguments are set to '${ADD_CMD}'"
+			;;
+		--custom-command| -ccmd)
+			RUN_TEST_P2P_CUSTOM="true"
+			RUN_TEST_P2S_CUSTOM="true"
+			shift
+			[ "$1" = "" ] && fatal "$arg flag must be followed by a value"
+			CUSTOM_CMD="$1"
+			info "Custom command is set to '${CUSTOM_CMD}'"
+			;;
+
+		--kubeconfig| -kubecfg)
+			shift
+			[ "$1" = "" ] && fatal "$arg flag must be followed by a value"
+			CUSTOM_KUBECFG="--kubeconfig $1"
+			info "Selected kubeconfig file is '${CUSTOM_KUBECFG}'"
+			;;
+
 		# Unknown flag
 		*) UNKNOWN_ARGLIST="$UNKNOWN_ARGLIST $arg" ;;
 	esac
@@ -1015,12 +1154,18 @@ CLIENT_TCP_P2P_POD_NAME=""
 CLIENT_UDP_P2P_POD_NAME=""
 CLIENT_TCP_P2S_POD_NAME=""
 CLIENT_UDP_P2S_POD_NAME=""
+# Added for ATLAS benchmarks
+CLIENT_CUSTOM_P2P_POD_NAME=""
+CLIENT_CUSTOM_P2S_POD_NAME=""
 
 $RUN_TEST_IDLE && IDLE_POD_NAME="knb-client-idle-$EXECID"
 $RUN_TEST_P2P_TCP && CLIENT_TCP_P2P_POD_NAME="knb-client-tcp-p2p-$EXECID"
 $RUN_TEST_P2P_UDP && CLIENT_UDP_P2P_POD_NAME="knb-client-udp-p2p-$EXECID"
 $RUN_TEST_P2S_TCP && CLIENT_TCP_P2S_POD_NAME="knb-client-tcp-p2s-$EXECID"
 $RUN_TEST_P2S_UDP && CLIENT_UDP_P2S_POD_NAME="knb-client-udp-p2s-$EXECID"
+# Added for ATLAS benchmarks
+$RUN_TEST_P2P_CUSTOM && CLIENT_CUSTOM_P2P_POD_NAME="knb-client-custom-p2p-$EXECID"
+$RUN_TEST_P2S_CUSTOM && CLIENT_CUSTOM_P2S_POD_NAME="knb-client-custom-p2s-$EXECID"
 
 # Creating env file with metadata
 cat <<EOF > $DATADIR/env
@@ -1030,6 +1175,8 @@ VERSION="$VERSION"
 BENCHMARK_DATE="$BENCHMARK_DATE"
 SERVER_NODE="$SERVER_NODE"
 CLIENT_NODE="$CLIENT_NODE"
+HOST_NETWORK_SERVER="$HOST_NETWORK_SERVER"
+HOST_NETWORK_CLIENT="$HOST_NETWORK_CLIENT"
 
 SOCKET_BUFFER_SIZE="$SOCKET_BUFFER_SIZE"
 
@@ -1042,6 +1189,8 @@ CLIENT_TCP_P2P_POD_NAME="$CLIENT_TCP_P2P_POD_NAME"
 CLIENT_UDP_P2P_POD_NAME="$CLIENT_UDP_P2P_POD_NAME"
 CLIENT_TCP_P2S_POD_NAME="$CLIENT_TCP_P2S_POD_NAME"
 CLIENT_UDP_P2S_POD_NAME="$CLIENT_UDP_P2S_POD_NAME"
+CLIENT_CUSTOM_P2P_POD_NAME="$CLIENT_CUSTOM_P2P_POD_NAME"
+CLIENT_CUSTOM_P2S_POD_NAME="$CLIENT_CUSTOM_P2S_POD_NAME"
 EOF
 
 # Catching CTRL-C
@@ -1056,8 +1205,8 @@ function ctrl_c {
 #==============================================================================
 
 #--- Server monitor --------------------------------
-info "Deploying server monitor on node $SERVER_NODE"
-cat <<EOF | kubectl apply $NAMESPACEOPT -f - >/dev/null|| fatal "Cannot create server monitor pod"
+info "Deploying server monitor on node $SERVER_NODE with hostNetwork: $HOST_NETWORK_SERVER"
+cat <<EOF | kubectl apply $NAMESPACEOPT $CUSTOM_KUBECFG -f - >/dev/null|| fatal "Cannot create server monitor pod"
 apiVersion: v1
 kind: Pod
 metadata:
@@ -1065,9 +1214,11 @@ metadata:
     app: $MONITOR_SERVER_POD_NAME
   name: $MONITOR_SERVER_POD_NAME
 spec:
+  hostNetwork: $HOST_NETWORK_SERVER
+  dnsPolicy: $DNS_POLICY  # "Default" is not the default DNS policy. if dnsPolicy is not specified then it is "ClusterFirst"
   containers:
   - name: monitor
-    image: infrabuilder/bench-custom-monitor
+    image: vmk-atds-registry-01.cern.ch/tbed/infrabuilder/bench-custom-monitor
   nodeSelector:
     kubernetes.io/hostname: $SERVER_NODE
 EOF
@@ -1079,8 +1230,8 @@ waitpod $MONITOR_SERVER_POD_NAME Running $POD_WAIT_TIMEOUT \
 	|| detect-pod-failure-reason-and-fatal $MONITOR_SERVER_POD_NAME "Failed to start server monitor pod"
 
 #--- Client monitor --------------------------------
-info "Deploying client monitor on node $CLIENT_NODE"
-cat <<EOF | kubectl apply $NAMESPACEOPT -f - >/dev/null|| fatal "Cannot create client monitor pod"
+info "Deploying client monitor on node $CLIENT_NODE with hostNetwork: $HOST_NETWORK_CLIENT"
+cat <<EOF | kubectl apply $NAMESPACEOPT $CUSTOM_KUBECFG -f - >/dev/null|| fatal "Cannot create client monitor pod"
 apiVersion: v1
 kind: Pod
 metadata:
@@ -1088,9 +1239,11 @@ metadata:
     app: $MONITOR_CLIENT_POD_NAME
   name: $MONITOR_CLIENT_POD_NAME
 spec:
+  hostNetwork: $HOST_NETWORK_CLIENT
+  dnsPolicy: $DNS_POLICY  # "Default" is not the default DNS policy. if dnsPolicy is not specified then it is "ClusterFirst"
   containers:
   - name: monitor
-    image: infrabuilder/bench-custom-monitor
+    image: vmk-atds-registry-01.cern.ch/tbed/infrabuilder/bench-custom-monitor
   nodeSelector:
     kubernetes.io/hostname: $CLIENT_NODE
 EOF
@@ -1105,8 +1258,8 @@ waitpod $MONITOR_CLIENT_POD_NAME Running $POD_WAIT_TIMEOUT \
 # Starting server
 #==============================================================================
 
-info "Deploying iperf server on node $SERVER_NODE"
-cat <<EOF | kubectl apply $NAMESPACEOPT -f - >/dev/null|| fatal "Cannot create server pod"
+info "Deploying iperf server on node $SERVER_NODE with hostNetwork: $HOST_NETWORK_SERVER"
+cat <<EOF | kubectl apply $NAMESPACEOPT $CUSTOM_KUBECFG -f - >/dev/null|| fatal "Cannot create server pod"
 apiVersion: v1
 kind: Pod
 metadata:
@@ -1114,9 +1267,11 @@ metadata:
     app: $SERVER_POD_NAME
   name: $SERVER_POD_NAME
 spec:
+  hostNetwork: $HOST_NETWORK_SERVER
+  dnsPolicy: $DNS_POLICY  # "Default" is not the default DNS policy. if dnsPolicy is not specified then it is "ClusterFirst"
   containers:
   - name: iperf
-    image: infrabuilder/netbench:server-iperf3
+    image: vmk-atds-registry-01.cern.ch/tbed/infrabuilder/netbench:server-iperf3
     args:
     - iperf3
     - -s
@@ -1144,10 +1299,10 @@ EOF
 RESOURCE_TO_CLEAN_BEFORE_EXIT="$RESOURCE_TO_CLEAN_BEFORE_EXIT pod/$SERVER_POD_NAME svc/$SERVER_SERVICE_NAME"
 
 info "Waiting for server to be running"
-kubectl wait $NAMESPACEOPT --for=condition=Ready pod/$SERVER_POD_NAME --timeout=${POD_WAIT_TIMEOUT}s >/dev/null \
+kubectl wait $NAMESPACEOPT $CUSTOM_KUBECFG --for=condition=Ready pod/$SERVER_POD_NAME --timeout=${POD_WAIT_TIMEOUT}s >/dev/null \
 	|| detect-pod-failure-reason-and-fatal $SERVER_POD_NAME "Failed to start server pod"
 
-SERVER_IP=$(kubectl get $NAMESPACEOPT pod $SERVER_POD_NAME -o jsonpath={.status.podIP})
+SERVER_IP=$(kubectl get $NAMESPACEOPT $CUSTOM_KUBECFG pod $SERVER_POD_NAME -o jsonpath={.status.podIP})
 $DEBUG && debug "Server IP address is $SERVER_IP"
 
 #==============================================================================
@@ -1157,14 +1312,14 @@ $DEBUG && debug "Server IP address is $SERVER_IP"
 #--- CPU Detection ----------------------------------------
 
 info "Detecting CPU"
-DISCOVERED_CPU=$(kubectl exec -i  $NAMESPACEOPT $SERVER_POD_NAME -- grep "model name" /proc/cpuinfo | tail -n 1 | awk -F: '{print $2}')
+DISCOVERED_CPU=$(kubectl exec -i  $NAMESPACEOPT $CUSTOM_KUBECFG $SERVER_POD_NAME -- grep "model name" /proc/cpuinfo | tail -n 1 | awk -F: '{print $2}')
 $DEBUG && debug "Cpu is $DISCOVERED_CPU"
 echo $DISCOVERED_CPU > $DATADIR/cpu
 
 #--- Kernel Detection -------------------------------------
 
 info "Detecting Kernel"
-DISCOVERED_KERNEL=$(kubectl exec -i  $NAMESPACEOPT $SERVER_POD_NAME -- uname -r)
+DISCOVERED_KERNEL=$(kubectl exec -i  $NAMESPACEOPT $CUSTOM_KUBECFG $SERVER_POD_NAME -- uname -r)
 $DEBUG && debug "Kernel is $DISCOVERED_KERNEL"
 echo $DISCOVERED_KERNEL > $DATADIR/kernel
 
@@ -1179,10 +1334,16 @@ echo $DISCOVERED_K8S_VERSION > $DATADIR/k8s-version
 #--- MTU Detection ----------------------------------------
 
 info "Detecting CNI MTU"
-CNI_MTU=$(kubectl exec -i  $NAMESPACEOPT $SERVER_POD_NAME -- ip link \
+CNI_MTU=$(kubectl exec -i  $NAMESPACEOPT $CUSTOM_KUBECFG $SERVER_POD_NAME -- ip link \
 	| grep "UP,LOWER_UP" | grep -v LOOPBACK | grep -oE "mtu [0-9]*"| $BIN_AWK '{print $2}')
 $DEBUG && debug "CNI MTU is $CNI_MTU"
 echo $CNI_MTU > $DATADIR/mtu
+
+# DETECTIONS ADDED FOR ATLAS BENCHMARKS
+
+#--- Server hostNetwork -----------------------------------
+
+# TODO
 
 #==============================================================================
 # Benchmark tests
@@ -1213,6 +1374,15 @@ else
 	info "Skipping P2P UDP test"
 fi
 
+# Added for ATLAS benchmarks
+
+if [ "$CLIENT_CUSTOM_P2P_POD_NAME" != "" ]
+then
+	run-client $CLIENT_CUSTOM_P2P_POD_NAME $SERVER_IP custom
+else
+	info "Skipping P2P custom test"
+fi
+
 #--- Pod to Service ---------------------------------------
 
 if [ "$CLIENT_TCP_P2S_POD_NAME" != "" ]
@@ -1227,6 +1397,15 @@ then
 	run-client $CLIENT_UDP_P2S_POD_NAME $SERVER_SERVICE_NAME udp
 else
 	info "Skipping P2S UDP test"
+fi
+
+# Added for ATLAS benchmarks
+
+if [ "$CLIENT_CUSTOM_P2S_POD_NAME" != "" ]
+then
+	run-client $CLIENT_CUSTOM_P2S_POD_NAME $SERVER_SERVICE_NAME custom
+else
+	info "Skipping P2S custom test"
 fi
 
 #==============================================================================
