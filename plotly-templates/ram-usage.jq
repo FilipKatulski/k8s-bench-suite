@@ -14,15 +14,19 @@
                 if .data.idle? then "Idle" else empty end,
                 if .data.pod2pod.tcp? then "pod2pod-tcp" else empty end,
                 if .data.pod2pod.udp? then "pod2pod-udp" else empty end,
+                if .data.pod2pod.custom? then "pod2pod-custom" else empty end,
                 if .data.pod2svc.tcp? then "pod2svc-tcp" else empty end,
-                if .data.pod2svc.udp? then "pod2svc-udp" else empty end
+                if .data.pod2svc.udp? then "pod2svc-udp" else empty end,
+                if .data.pod2svc.custom? then "pod2svc-custom" else empty end
             ],
             "y": [
                 if .data.idle? then .data.idle.client.ram else empty end,
                 if .data.pod2pod.tcp? then .data.pod2pod.tcp.client.ram else empty end,
                 if .data.pod2pod.udp? then .data.pod2pod.udp.client.ram else empty end,
+                if .data.pod2pod.custom? then .data.pod2pod.custom.client.ram else empty end,
                 if .data.pod2svc.tcp? then .data.pod2svc.tcp.client.ram else empty end,
-                if .data.pod2svc.udp? then .data.pod2svc.udp.client.ram else empty end
+                if .data.pod2svc.udp? then .data.pod2svc.udp.client.ram else empty end,
+                if .data.pod2svc.custom? then .data.pod2svc.custom.client.ram else empty end
             ],
             "marker": {
                 "color": "rgb(147, 75, 232)"
@@ -31,8 +35,10 @@
                 if .data.idle? then .data.idle.client.ram else empty end,
                 if .data.pod2pod.tcp? then .data.pod2pod.tcp.client.ram else empty end,
                 if .data.pod2pod.udp? then .data.pod2pod.udp.client.ram else empty end,
+                if .data.pod2pod.custom? then .data.pod2pod.custom.client.ram else empty end,
                 if .data.pod2svc.tcp? then .data.pod2svc.tcp.client.ram else empty end,
-                if .data.pod2svc.udp? then .data.pod2svc.udp.client.ram else empty end
+                if .data.pod2svc.udp? then .data.pod2svc.udp.client.ram else empty end,
+                if .data.pod2svc.custom? then .data.pod2svc.custom.client.ram else empty end
             ],
             "showlegend": true,
             "legendgroup": 1,
@@ -55,15 +61,19 @@
                 if .data.idle? then "Idle" else empty end,
                 if .data.pod2pod.tcp? then "pod2pod-tcp" else empty end,
                 if .data.pod2pod.udp? then "pod2pod-udp" else empty end,
+                if .data.pod2pod.custom? then "pod2pod-custom" else empty end,
                 if .data.pod2svc.tcp? then "pod2svc-tcp" else empty end,
-                if .data.pod2svc.udp? then "pod2svc-udp" else empty end
+                if .data.pod2svc.udp? then "pod2svc-udp" else empty end,
+                if .data.pod2svc.custom? then "pod2svc-custom" else empty end
             ],
             "y": [
                 if .data.idle? then .data.idle.server.ram else empty end,
                 if .data.pod2pod.tcp? then .data.pod2pod.tcp.server.ram else empty end,
                 if .data.pod2pod.udp? then .data.pod2pod.udp.server.ram else empty end,
+                if .data.pod2pod.custom? then .data.pod2pod.custom.server.ram else empty end,
                 if .data.pod2svc.tcp? then .data.pod2svc.tcp.server.ram else empty end,
-                if .data.pod2svc.udp? then .data.pod2svc.udp.server.ram else empty end
+                if .data.pod2svc.udp? then .data.pod2svc.udp.server.ram else empty end,
+                if .data.pod2svc.custom? then .data.pod2svc.custom.server.ram else empty end
             ],
             "yaxis": "y",
             "marker": {
@@ -78,8 +88,10 @@
                 if .data.idle? then .data.idle.server.ram else empty end,
                 if .data.pod2pod.tcp? then .data.pod2pod.tcp.server.ram else empty end,
                 if .data.pod2pod.udp? then .data.pod2pod.udp.server.ram else empty end,
+                if .data.pod2pod.custom? then .data.pod2pod.custom.server.ram else empty end,
                 if .data.pod2svc.tcp? then .data.pod2svc.tcp.server.ram else empty end,
-                if .data.pod2svc.udp? then .data.pod2svc.udp.server.ram else empty end
+                if .data.pod2svc.udp? then .data.pod2svc.udp.server.ram else empty end,
+                if .data.pod2svc.custom? then .data.pod2svc.custom.server.ram else empty end
             ],
             "showlegend": true,
             "legendgroup": 1,
