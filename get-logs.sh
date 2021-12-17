@@ -59,6 +59,8 @@ do
     shift
 done
 
+# TODO: Create this file as a python script for easier development
+
 [ "$UNKNOWN_ARGLIST" != "" ] && fatal "Unknown arguments : $UNKNOWN_ARGLIST"
 $DEBUG && debug "Argument parsing done"
 

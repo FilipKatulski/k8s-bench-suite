@@ -311,7 +311,7 @@ def plot_data(inputconfig: dict):
         else:
             continue
 
-
+# TODO: Implement log saving (also copying of stdout) to a file
 def main():
     """
     The main function parses arguments provided for the script and runs specified functions.
