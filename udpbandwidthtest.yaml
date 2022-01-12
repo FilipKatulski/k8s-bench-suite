@@ -1,0 +1,14 @@
+nodes:
+  pairs:
+    - pc-tbed-tpu-08001.cern.ch, pc-tbed-tpu-08002.cern.ch
+    - pc-tbed-tpu-08001.cern.ch, pc-tbed-tpu-08021.cern.ch
+parameters:
+  namespace:
+    knbtest
+  optional:
+    - --verbose
+    - --debug
+    - --host-network-client
+    - --host-network-server
+  output-folder:
+    udptests
