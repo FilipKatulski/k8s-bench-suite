@@ -1,0 +1,17 @@
+nodes:
+  pairs:
+    - fkatulski-54dyjjojbpkc-node-0, fkatulski-54dyjjojbpkc-node-1
+    - fkatulski-54dyjjojbpkc-node-0, fkatulski-54dyjjojbpkc-node-2
+    - fkatulski-54dyjjojbpkc-node-0, fkatulski-54dyjjojbpkc-node-3
+    - fkatulski-54dyjjojbpkc-node-0, fkatulski-54dyjjojbpkc-node-4
+    - fkatulski-54dyjjojbpkc-node-0, fkatulski-54dyjjojbpkc-node-0
+parameters:
+  namespace:
+    knbtest
+  optional:
+    - --verbose
+    - --debug
+    - --host-network-client
+    - --host-network-server
+  output-folder:
+    openstack-udptests-hostnetwork

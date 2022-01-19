@@ -1,0 +1,12 @@
+parameters:
+  input-folder:
+    udptests-caliconetwork
+  namespace:
+    knbtest
+  optional:
+    - -v
+    - --debug
+  output-folder:
+    "./udptestplots/caliconetwork"
+  kubeconfig-file:
+    "/afs/cern.ch/user/f/fkatulsk/private/FKatulskiOpenStack.conf"
