@@ -14,9 +14,9 @@ parameters:
   optional:
     - --verbose
     - --debug
-    # - --host-network-client
-    - -hnc
-    # - --host-network-server
-    - -hns
+    - --host-network-client
+    - --host-network-server
   output-folder:
     udptests-hostnetwork
+  kubeconfig-file:
+    "/afs/cern.ch/user/f/fkatulsk/public/config-tbed"

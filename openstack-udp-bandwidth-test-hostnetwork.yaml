@@ -15,3 +15,5 @@ parameters:
     - --host-network-server
   output-folder:
     openstack-udptests-hostnetwork
+  kubeconfig-file:
+    "/afs/cern.ch/user/f/fkatulsk/private/FKatulskiOpenStack.conf"

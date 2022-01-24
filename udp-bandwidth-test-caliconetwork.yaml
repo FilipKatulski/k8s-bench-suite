@@ -18,3 +18,5 @@ parameters:
     # - --host-network-server
   output-folder:
     udptests-caliconetwork
+  kubeconfig-file:
+    "/afs/cern.ch/user/f/fkatulsk/public/config-tbed"
