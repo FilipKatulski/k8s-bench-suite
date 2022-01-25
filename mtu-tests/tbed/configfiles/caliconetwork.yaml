@@ -1,0 +1,22 @@
+nodes:
+  pairs:
+    - pc-tbed-k8s-03.cern.ch, pc-tbed-tpu-08002.cern.ch
+    - pc-tbed-k8s-03.cern.ch, pc-tbed-tpu-08021.cern.ch
+    - pc-tbed-k8s-01.cern.ch, pc-tbed-tpu-08002.cern.ch
+    - pc-tbed-k8s-01.cern.ch, pc-tbed-k8s-01.cern.ch
+    - pc-tbed-k8s-02.cern.ch, pc-tbed-tpu-08002.cern.ch
+    - pc-tbed-tpu-08021.cern.ch, pc-tbed-tpu-08021.cern.ch
+    - pc-tbed-tpu-08021.cern.ch, pc-tbed-k8s-01.cern.ch
+    - pc-tbed-tpu-08021.cern.ch, pc-tbed-tpu-08001.cern.ch
+parameters:
+  namespace:
+    knbtest
+  optional:
+    - --verbose
+    - --debug
+    # - --host-network-client
+    # - --host-network-server
+  output-folder:
+    "mtu-tests/tbed/results/caliconetwork/1000"
+  kubeconfig-file:
+    "/afs/cern.ch/user/f/fkatulsk/public/config-tbed"
