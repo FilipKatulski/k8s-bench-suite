@@ -11,9 +11,9 @@ parameters:
   optional:
     - --verbose
     - --debug
-    # - --host-network-client
-    # - --host-network-server
+    - --host-network-client
+    - --host-network-server
   output-folder:
-    openstack-udptests-caliconetwork
+    openstack-udptests-hostnetwork
   kubeconfig-file:
     "/afs/cern.ch/user/f/fkatulsk/private/FKatulskiOpenStack.conf"
