@@ -1,0 +1,32 @@
+nodes:
+  pairs:
+    - pc-tbed-k8s-01.cern.ch, pc-tbed-tpu-08002.cern.ch
+    - pc-tbed-tpu-08021.cern.ch, pc-tbed-tpu-08021.cern.ch
+    - pc-tbed-tpu-08021.cern.ch, pc-tbed-tpu-08001.cern.ch
+parameters:
+  basic-tests:
+    - idle
+  custom-tests:
+    - "--cport 5201 -O 1 -f m -t 10 -M 1460"
+    - "--cport 5201 -O 1 -f m -t 10 -M 1460 -w 65535"
+    - "--cport 5201 -O 1 -f m -t 10 -M 1460 -w 64512"
+    - "--cport 5201 -O 1 -f m -t 10 -M 1460 -w 63488"
+    - "--cport 5201 -O 1 -f m -t 10 -M 1460 -w 62464"
+    - "--cport 5201 -O 1 -f m -t 10 -M 1460 -w 61440"
+    - "--cport 5201 -O 1 -f m -t 10 -M 1460 -w 60416"
+    - "--cport 5201 -O 1 -f m -t 10 -M 1460 -w 59392"
+    - "--cport 5201 -O 1 -f m -t 10 -M 1460 -w 58368"
+    - "--cport 5201 -O 1 -f m -t 10 -M 1460 -w 57344"
+    - "--cport 5201 -O 1 -f m -t 10 -M 1460 -w 49152"
+    - "--cport 5201 -O 1 -f m -t 10 -M 1460 -w 32768"
+  namespace:
+    knbtest
+  optional:
+    - --verbose
+    - --debug
+    - --host-network-client
+    - --host-network-server
+  output-folder:
+    "tcp-window-tests/tbed/results/caliconetwork"
+  kubeconfig-file:
+    "/afs/cern.ch/user/f/fkatulsk/public/config-tbed"
