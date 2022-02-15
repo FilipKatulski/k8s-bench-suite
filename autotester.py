@@ -264,7 +264,7 @@ def run_tests(data: dict):
 
 def plot_data(inputconfig: dict):
     """
-    This function provides 
+    This function provides plots accordingly to the provided configuration. 
     :param inputconfig: Dictionary with parameters for plotting
     """
     input_folder = ''
@@ -311,6 +311,16 @@ def plot_data(inputconfig: dict):
         else:
             continue
 
+def generate_report(inputconfig: dict):
+    """
+    This function creates reports accordingly to the configuration file.
+    :param inputconfig: Dictionary with parameters for generating report
+    """
+
+    display_header()
+    
+    ...
+
 # TODO: Implement log saving (also copying of stdout) to a file
 def main():
     """
@@ -328,6 +338,7 @@ def main():
     parser.add_argument('-i', '--input', dest='input', required=False, metavar='FILE', 
     type=lambda x: _is_valid_file(parser, x), 
     help='input yaml file with test configuration or input folder for plotting')
+    parser.add_argument('-fd','--from-data', action='store_true', help='generate report from data')
     parser.add_argument('-p', '--plot', action='store_true', help='create plots from selected folder')
 
     args = parser.parse_args()
@@ -337,9 +348,13 @@ def main():
     if args.knb_help:
         display_knb_help()
     if args.input:
-        if args.plot:
-            plot_config = parse_yaml(args.input)
-            plot_data(plot_config)
+        if args.from_data:
+            if args.plot:
+                plot_config = parse_yaml(args.input)
+                plot_data(plot_config)
+            else:
+                report_config = parse_yaml(args.input)
+                generate_report(report_config)
         else:
             test_config = parse_yaml(args.input)
             run_tests(test_config)
