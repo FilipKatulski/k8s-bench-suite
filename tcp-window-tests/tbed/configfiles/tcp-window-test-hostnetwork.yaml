@@ -24,9 +24,10 @@ parameters:
   optional:
     - --verbose
     - --debug
+    - "--timeout 30" 
     - --host-network-client
     - --host-network-server
   output-folder:
-    "tcp-window-tests/tbed/results/caliconetwork"
+    "tcp-window-tests/tbed/results/hostnetwork"
   kubeconfig-file:
     "/afs/cern.ch/user/f/fkatulsk/public/config-tbed"

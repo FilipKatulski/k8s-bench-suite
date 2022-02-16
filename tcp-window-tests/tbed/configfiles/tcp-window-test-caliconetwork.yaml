@@ -24,6 +24,7 @@ parameters:
   optional:
     - --verbose
     - --debug
+    - "--timeout 30" 
     # - --host-network-client
     # - --host-network-server
   output-folder:
