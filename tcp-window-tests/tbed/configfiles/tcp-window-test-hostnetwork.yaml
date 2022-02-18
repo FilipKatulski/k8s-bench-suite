@@ -1,24 +1,39 @@
 nodes:
   pairs:
     - pc-tbed-k8s-01.cern.ch, pc-tbed-tpu-08002.cern.ch
-    - pc-tbed-tpu-08021.cern.ch, pc-tbed-tpu-08021.cern.ch
     - pc-tbed-tpu-08021.cern.ch, pc-tbed-tpu-08001.cern.ch
+    - pc-tbed-k8s-01.cern.ch, pc-tbed-k8s-02.cern.ch
 parameters:
   basic-tests:
     - idle
   custom-tests:
-    - "--cport 5201 -O 1 -f m -t 10 -M 1460"
-    - "--cport 5201 -O 1 -f m -t 10 -M 1460 -w 65535"
-    - "--cport 5201 -O 1 -f m -t 10 -M 1460 -w 64512"
-    - "--cport 5201 -O 1 -f m -t 10 -M 1460 -w 63488"
-    - "--cport 5201 -O 1 -f m -t 10 -M 1460 -w 62464"
-    - "--cport 5201 -O 1 -f m -t 10 -M 1460 -w 61440"
-    - "--cport 5201 -O 1 -f m -t 10 -M 1460 -w 60416"
-    - "--cport 5201 -O 1 -f m -t 10 -M 1460 -w 59392"
-    - "--cport 5201 -O 1 -f m -t 10 -M 1460 -w 58368"
-    - "--cport 5201 -O 1 -f m -t 10 -M 1460 -w 57344"
-    - "--cport 5201 -O 1 -f m -t 10 -M 1460 -w 49152"
-    - "--cport 5201 -O 1 -f m -t 10 -M 1460 -w 32768"
+    - "--cport 5201 -O 1 -f m -t 10 -M 1400"
+    - "--cport 5201 -O 1 -f m -t 10 -M 1400 -w 65535"
+    - "--cport 5201 -O 1 -f m -t 10 -M 1400 -w 64512"
+    - "--cport 5201 -O 1 -f m -t 10 -M 1400 -w 63488"
+    - "--cport 5201 -O 1 -f m -t 10 -M 1400 -w 62464"
+    - "--cport 5201 -O 1 -f m -t 10 -M 1400 -w 61440"
+    - "--cport 5201 -O 1 -f m -t 10 -M 1400 -w 60416"
+    - "--cport 5201 -O 1 -f m -t 10 -M 1400 -w 59392"
+    - "--cport 5201 -O 1 -f m -t 10 -M 1400 -w 58368"
+    - "--cport 5201 -O 1 -f m -t 10 -M 1400 -w 57344"
+    - "--cport 5201 -O 1 -f m -t 10 -M 1400 -w 56320"
+    - "--cport 5201 -O 1 -f m -t 10 -M 1400 -w 55296"
+    - "--cport 5201 -O 1 -f m -t 10 -M 1400 -w 52272"
+    - "--cport 5201 -O 1 -f m -t 10 -M 1400 -w 53248"
+    - "--cport 5201 -O 1 -f m -t 10 -M 1400 -w 52224"
+    - "--cport 5201 -O 1 -f m -t 10 -M 1400 -w 51200"
+    - "--cport 5201 -O 1 -f m -t 10 -M 1400 -w 50176"
+    - "--cport 5201 -O 1 -f m -t 10 -M 1400 -w 49152"
+    - "--cport 5201 -O 1 -f m -t 10 -M 1400 -w 48128"
+    - "--cport 5201 -O 1 -f m -t 10 -M 1400 -w 47104"
+    - "--cport 5201 -O 1 -f m -t 10 -M 1400 -w 45056"
+    - "--cport 5201 -O 1 -f m -t 10 -M 1400 -w 43008"
+    - "--cport 5201 -O 1 -f m -t 10 -M 1400 -w 40960"
+    - "--cport 5201 -O 1 -f m -t 10 -M 1400 -w 38912"
+    - "--cport 5201 -O 1 -f m -t 10 -M 1400 -w 36864"
+    - "--cport 5201 -O 1 -f m -t 10 -M 1400 -w 34816"
+    - "--cport 5201 -O 1 -f m -t 10 -M 1400 -w 32768"
   namespace:
     knbtest
   optional:
@@ -28,6 +43,6 @@ parameters:
     - --host-network-client
     - --host-network-server
   output-folder:
-    "tcp-window-tests/tbed/results/hostnetwork"
+    "tcp-window-tests/tbed/results/hostnetwork2"
   kubeconfig-file:
     "/afs/cern.ch/user/f/fkatulsk/public/config-tbed"
