@@ -1,7 +1,7 @@
 nodes:
   pairs:
-    - pc-tbed-tpu-08003.cern.ch, pc-tbed-tpu-08024.cern.ch
-    # - pc-tbed-tpu-08021.cern.ch, pc-tbed-tpu-08001.cern.ch
+    # - pc-tbed-tpu-08003.cern.ch, pc-tbed-tpu-08024.cern.ch
+    - pc-tbed-tpu-08021.cern.ch, pc-tbed-tpu-08001.cern.ch
     # - pc-tbed-tpu-08002.cern.ch, pc-tbed-tpu-08010.cern.ch
 parameters:
   basic-tests:
@@ -67,9 +67,9 @@ parameters:
     - --verbose
     - --debug
     - "--timeout 70" 
-    - --host-network-client
-    - --host-network-server
+    # - --host-network-client
+    # - --host-network-server
   output-folder:
-    "tcp-window-tests/tbed/results/hostnetwork5"
+    "tcp-window-tests/tbed/results/caliconetwork5"
   kubeconfig-file:
     "/afs/cern.ch/user/f/fkatulsk/public/config-tbed"
