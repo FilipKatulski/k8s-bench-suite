@@ -1,0 +1,75 @@
+nodes:
+  pairs:
+    # - pc-tbed-tpu-08003.cern.ch, pc-tbed-tpu-08024.cern.ch
+    - pc-tbed-tpu-08021.cern.ch, pc-tbed-tpu-08001.cern.ch
+    # - pc-tbed-tpu-08002.cern.ch, pc-tbed-tpu-08001.cern.ch
+parameters:
+  basic-tests:
+    - idle
+    - udp
+  custom-tests:
+    - "--cport 5201 -O 1 -f m -t 10"
+    - "--cport 5201 -O 1 -f m -t 10 -w 65535"
+    - "--cport 5201 -O 1 -f m -t 10 -w 65535"
+    - "--cport 5201 -O 1 -f m -t 10 -w 64512"
+    - "--cport 5201 -O 1 -f m -t 10 -w 64512"
+    - "--cport 5201 -O 1 -f m -t 10 -w 63488"
+    - "--cport 5201 -O 1 -f m -t 10 -w 63488"
+    - "--cport 5201 -O 1 -f m -t 10 -w 62464"
+    - "--cport 5201 -O 1 -f m -t 10 -w 62464"
+    - "--cport 5201 -O 1 -f m -t 10 -w 61440"
+    - "--cport 5201 -O 1 -f m -t 10 -w 61440"
+    - "--cport 5201 -O 1 -f m -t 10 -w 60416"
+    - "--cport 5201 -O 1 -f m -t 10 -w 60416"
+    - "--cport 5201 -O 1 -f m -t 10 -w 59392"
+    - "--cport 5201 -O 1 -f m -t 10 -w 59392"
+    - "--cport 5201 -O 1 -f m -t 10 -w 58368"
+    - "--cport 5201 -O 1 -f m -t 10 -w 58368"
+    - "--cport 5201 -O 1 -f m -t 10 -w 57344"
+    - "--cport 5201 -O 1 -f m -t 10 -w 57344"
+    - "--cport 5201 -O 1 -f m -t 10 -w 56320"
+    - "--cport 5201 -O 1 -f m -t 10 -w 56320"
+    - "--cport 5201 -O 1 -f m -t 10 -w 55296"
+    - "--cport 5201 -O 1 -f m -t 10 -w 55296"
+    - "--cport 5201 -O 1 -f m -t 10 -w 52272"
+    - "--cport 5201 -O 1 -f m -t 10 -w 52272"
+    - "--cport 5201 -O 1 -f m -t 10 -w 53248"
+    - "--cport 5201 -O 1 -f m -t 10 -w 53248"
+    - "--cport 5201 -O 1 -f m -t 10 -w 52224"
+    - "--cport 5201 -O 1 -f m -t 10 -w 52224"
+    - "--cport 5201 -O 1 -f m -t 10 -w 51200"
+    - "--cport 5201 -O 1 -f m -t 10 -w 51200"
+    - "--cport 5201 -O 1 -f m -t 10 -w 50176"
+    - "--cport 5201 -O 1 -f m -t 10 -w 50176"
+    - "--cport 5201 -O 1 -f m -t 10 -w 49152"
+    - "--cport 5201 -O 1 -f m -t 10 -w 49152"
+    - "--cport 5201 -O 1 -f m -t 10 -w 48128"
+    - "--cport 5201 -O 1 -f m -t 10 -w 48128"
+    - "--cport 5201 -O 1 -f m -t 10 -w 47104"
+    - "--cport 5201 -O 1 -f m -t 10 -w 47104"
+    - "--cport 5201 -O 1 -f m -t 10 -w 45056"
+    - "--cport 5201 -O 1 -f m -t 10 -w 45056"
+    - "--cport 5201 -O 1 -f m -t 10 -w 43008"
+    - "--cport 5201 -O 1 -f m -t 10 -w 43008"
+    - "--cport 5201 -O 1 -f m -t 10 -w 40960"
+    - "--cport 5201 -O 1 -f m -t 10 -w 40960"
+    - "--cport 5201 -O 1 -f m -t 10 -w 38912"
+    - "--cport 5201 -O 1 -f m -t 10 -w 38912"
+    - "--cport 5201 -O 1 -f m -t 10 -w 36864"
+    - "--cport 5201 -O 1 -f m -t 10 -w 36864"
+    - "--cport 5201 -O 1 -f m -t 10 -w 34816"
+    - "--cport 5201 -O 1 -f m -t 10 -w 34816"
+    - "--cport 5201 -O 1 -f m -t 10 -w 32768"
+    - "--cport 5201 -O 1 -f m -t 10 -w 32768"
+  namespace:
+    knbtest
+  optional:
+    - --verbose
+    - --debug
+    - "--timeout 20" 
+    # - --host-network-client
+    # - --host-network-server
+  output-folder:
+    "tcp-window-tests/tbed/results/caliconetwork4"
+  kubeconfig-file:
+    "/afs/cern.ch/user/f/fkatulsk/public/config-tbed"
