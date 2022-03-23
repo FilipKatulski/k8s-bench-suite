@@ -1,7 +1,8 @@
 nodes:
   pairs:
     # - pc-tbed-tpu-08003.cern.ch, pc-tbed-tpu-08024.cern.ch
-    - pc-tbed-tpu-08021.cern.ch, pc-tbed-tpu-08001.cern.ch
+    # - pc-tbed-tpu-08021.cern.ch, pc-tbed-tpu-08001.cern.ch
+    - pc-tbed-tpu-08001.cern.ch, pc-tbed-tpu-08003.cern.ch
     # - pc-tbed-tpu-08002.cern.ch, pc-tbed-tpu-08010.cern.ch
 parameters:
   basic-tests:
