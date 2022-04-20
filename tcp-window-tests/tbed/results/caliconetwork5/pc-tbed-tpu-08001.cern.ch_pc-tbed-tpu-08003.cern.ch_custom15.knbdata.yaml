@@ -1,0 +1,115 @@
+metadata:
+  name: "knb-9704"
+  generator: "knb"
+  version: "1.5.1"
+  date: "2022-03-23 18:49:14"
+  server-node: "pc-tbed-tpu-08001.cern.ch"
+  client-node: "pc-tbed-tpu-08003.cern.ch"
+  socket-buffer-size: "auto"
+data:
+  cpu: "Intel(R) Xeon(R) CPU E5-2680 v3 @ 2.50GHz"
+  kernel: "3.10.0-1160.45.1.el7.x86_64"
+  k8s-version: "v1.21.1"
+  mtu: "1480"
+  idle:
+    bandwidth: 0
+    client:
+      cpu:
+        total: nan
+        user: NaN
+        nice: NaN
+        system: NaN
+        iowait: NaN
+        steal: NaN
+      ram: NaN
+    server:
+      cpu:
+        total: nan
+        user: NaN
+        nice: NaN
+        system: NaN
+        iowait: NaN
+        steal: NaN
+      ram: NaN
+  pod2pod:
+    udp:
+      bandwidth: 925
+      client:
+        cpu:
+          total: 0.48
+          user: 0.24
+          nice: 0.01
+          system: 0.21
+          iowait: 0.02
+          steal: 0.00
+        ram: 2653
+      server:
+        cpu:
+          total: 2.47
+          user: 1.59
+          nice: 0.01
+          system: 0.77
+          iowait: 0.10
+          steal: 0.00
+        ram: 3327
+    custom:
+      bandwidth: 930
+      client:
+        cpu:
+          total: 0.81
+          user: 0.31
+          nice: 0.01
+          system: 0.27
+          iowait: 0.22
+          steal: 0.00
+        ram: 2664
+      server:
+        cpu:
+          total: 1.30
+          user: 0.72
+          nice: 0.01
+          system: 0.40
+          iowait: 0.17
+          steal: 0.00
+        ram: 3333
+  pod2svc:
+    udp:
+      bandwidth: 942
+      client:
+        cpu:
+          total: 0.40
+          user: 0.13
+          nice: 0.00
+          system: 0.26
+          iowait: 0.01
+          steal: 0.00
+        ram: 2633
+      server:
+        cpu:
+          total: 1.04
+          user: 0.54
+          nice: 0.01
+          system: 0.47
+          iowait: 0.02
+          steal: 0.00
+        ram: 3310
+    custom:
+      bandwidth: 931
+      client:
+        cpu:
+          total: 0.63
+          user: 0.26
+          nice: 0.01
+          system: 0.28
+          iowait: 0.08
+          steal: 0.00
+        ram: 2634
+      server:
+        cpu:
+          total: 1.32
+          user: 0.78
+          nice: 0.00
+          system: 0.53
+          iowait: 0.01
+          steal: 0.00
+        ram: 3316

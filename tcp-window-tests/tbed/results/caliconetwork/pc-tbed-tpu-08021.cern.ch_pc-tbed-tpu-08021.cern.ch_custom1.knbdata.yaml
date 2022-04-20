@@ -1,0 +1,75 @@
+metadata:
+  name: "knb-7347"
+  generator: "knb"
+  version: "1.5.1"
+  date: "2022-02-15 18:07:20"
+  server-node: "pc-tbed-tpu-08021.cern.ch"
+  client-node: "pc-tbed-tpu-08021.cern.ch"
+  socket-buffer-size: "auto"
+data:
+  cpu: "Intel(R) Xeon(R) CPU E5-2680 v3 @ 2.50GHz"
+  kernel: "3.10.0-1160.45.1.el7.x86_64"
+  k8s-version: "v1.21.2"
+  mtu: "1480"
+  idle:
+    bandwidth: 0
+    client:
+      cpu:
+        total: nan
+        user: NaN
+        nice: NaN
+        system: NaN
+        iowait: NaN
+        steal: NaN
+      ram: NaN
+    server:
+      cpu:
+        total: nan
+        user: NaN
+        nice: NaN
+        system: NaN
+        iowait: NaN
+        steal: NaN
+      ram: NaN
+  pod2pod:
+    custom:
+      bandwidth: 15823
+      client:
+        cpu:
+          total: nan
+          user: NaN
+          nice: NaN
+          system: NaN
+          iowait: NaN
+          steal: NaN
+        ram: NaN
+      server:
+        cpu:
+          total: nan
+          user: NaN
+          nice: NaN
+          system: NaN
+          iowait: NaN
+          steal: NaN
+        ram: NaN
+  pod2svc:
+    custom:
+      bandwidth: 13751
+      client:
+        cpu:
+          total: 0.98
+          user: 0.36
+          nice: 0.02
+          system: 0.33
+          iowait: 0.27
+          steal: 0.00
+        ram: 2152
+      server:
+        cpu:
+          total: 1.07
+          user: 0.39
+          nice: 0.02
+          system: 0.36
+          iowait: 0.30
+          steal: 0.00
+        ram: 2145

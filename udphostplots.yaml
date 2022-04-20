@@ -1,0 +1,12 @@
+parameters:
+  input-folder:
+    udptests-hostnetwork
+  namespace:
+    knbtest
+  optional:
+    - -v
+    - --debug
+  output-folder:
+    "./udptestplots/hostnetwork"
+  kubeconfig-file:
+    "/afs/cern.ch/user/f/fkatulsk/private/FKatulskiOpenStack.conf"

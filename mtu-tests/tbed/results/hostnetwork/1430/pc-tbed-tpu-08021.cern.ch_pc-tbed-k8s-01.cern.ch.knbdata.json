@@ -1,0 +1,146 @@
+{
+  "metadata": {
+    "name": "knb-12756",
+    "generator": "knb",
+    "version": "1.5.1",
+    "date": "2022-01-27 15:39:22",
+    "server-node": "pc-tbed-tpu-08021.cern.ch",
+    "client-node": "pc-tbed-k8s-01.cern.ch",
+    "socket-buffer-size": "auto"
+  },
+  "data": {
+    "cpu": "Intel(R) Xeon(R) CPU E5-2680 v3 @ 2.50GHz",
+    "kernel": "3.10.0-1160.45.1.el7.x86_64",
+    "k8s-version": "v1.21.2",
+    "mtu": "1500 1430 1480",
+    "idle": {
+      "bandwidth": 0,
+      "client": {
+        "cpu": {
+          "total": nan,
+          "user": NaN,
+          "nice": NaN,
+          "system": NaN,
+          "iowait": NaN,
+          "steal": NaN
+        },
+        "ram": NaN
+      },
+      "server": {
+        "cpu": {
+          "total": 5.06,
+          "user": 3.90,
+          "nice": 0.00,
+          "system": 1.16,
+          "iowait": 0.00,
+          "steal": 0.00
+        },
+        "ram": 3685
+      }
+    },
+    "pod2pod": {
+      "tcp": {
+        "bandwidth": 930,
+        "client": {
+          "cpu": {
+            "total": 1.15,
+            "user": 0.62,
+            "nice": 0.01,
+            "system": 0.24,
+            "iowait": 0.28,
+            "steal": 0.00
+          },
+          "ram": 2936
+        },
+        "server": {
+          "cpu": {
+            "total": 1.07,
+            "user": 0.72,
+            "nice": 0.01,
+            "system": 0.31,
+            "iowait": 0.03,
+            "steal": 0.00
+          },
+          "ram": 3679
+        }
+      },
+      "udp": {
+        "bandwidth": 939,
+        "client": {
+          "cpu": {
+            "total": 1.36,
+            "user": 0.66,
+            "nice": 0.02,
+            "system": 0.34,
+            "iowait": 0.34,
+            "steal": 0.00
+          },
+          "ram": 2938
+        },
+        "server": {
+          "cpu": {
+            "total": 1.45,
+            "user": 0.88,
+            "nice": 0.01,
+            "system": 0.32,
+            "iowait": 0.24,
+            "steal": 0.00
+          },
+          "ram": 3673
+        }
+      }
+    },
+    "pod2svc": {
+      "tcp": {
+        "bandwidth": 947,
+        "client": {
+          "cpu": {
+            "total": 1.76,
+            "user": 0.70,
+            "nice": 0.00,
+            "system": 0.78,
+            "iowait": 0.28,
+            "steal": 0.00
+          },
+          "ram": 2945
+        },
+        "server": {
+          "cpu": {
+            "total": 1.08,
+            "user": 0.64,
+            "nice": 0.00,
+            "system": 0.33,
+            "iowait": 0.11,
+            "steal": 0.00
+          },
+          "ram": 3666
+        }
+      },
+      "udp": {
+        "bandwidth": 936,
+        "client": {
+          "cpu": {
+            "total": 1.74,
+            "user": 0.79,
+            "nice": 0.02,
+            "system": 0.56,
+            "iowait": 0.37,
+            "steal": 0.00
+          },
+          "ram": 2947
+        },
+        "server": {
+          "cpu": {
+            "total": 2.62,
+            "user": 1.76,
+            "nice": 0.01,
+            "system": 0.62,
+            "iowait": 0.23,
+            "steal": 0.00
+          },
+          "ram": 3664
+        }
+      }
+    }
+  }
+}

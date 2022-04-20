@@ -384,7 +384,7 @@ parameters:
   output-folder:
     "./testing101/plots"
   kubeconfig-file:
-    "/path/to/kubeconfig/file"
+    "/afs/cern.ch/user/f/fkatulsk/private/FKatulskiOpenStack.conf"
 
 _________________________________________________
 
