@@ -1,5 +1,7 @@
 # k8s-bench-suite
-Bash and Python scripts collection to benchmark Kubernetes cluster performance. Modified to meet CERN ATLAS Kubernetes cluster's demands by Filip Katulski.
+Bash and Python scripts collection to benchmark Kubernetes cluster performance. Modified to meet ATLAS P1 Kubernetes cluster's demands by Filip Katulski <filip.katulski@cern.ch>, EP-ADT-DQ, ATLAS.
+
+The creator of the original version is Alexis Ducastel <alexis@infrabuilder.com>
 
 ## [knb](knb) : Kubernetes Network Benchmark
 
@@ -241,7 +243,9 @@ Mandatory flags :
 
 ## [KNB Autotester](autotester.py) : KNB Autotester
 
-Autotester is a Python script created to help automate multiple network tests. It runs knb script mutilple times, according to the config file. 
+Autotester is a Python script created to help automate multiple network tests. It runs knb script mutilple times, according to the configuration file. 
+
+This script was created by Filip Katulski <filip.katulski@cern.ch>
 
 Here are some highlights:
 
@@ -390,7 +394,7 @@ _________________________________________________
 
 ```
 
-### Plot examples
+## KNB plotting module examples
 
 ![bandwidth](https://user-images.githubusercontent.com/21361354/102022246-d6e1d080-3d85-11eb-8ca6-37064ac3918f.png)
 ![cpu-usage](https://user-images.githubusercontent.com/21361354/102022247-d812fd80-3d85-11eb-820f-f5108cf8b930.png)
