@@ -1,10 +1,12 @@
 #!/bin/bash
 ###################################################################
 # @Description : Kubernetes Network Benchmark
-# @Author      : Alexis Ducastel <alexis@infrabuilder.com>, Filip Katulski <filip.katulski@cern.ch> 
+# @Author      : Alexis Ducastel <alexis@infrabuilder.com> 
 # @License     : MIT
 ###################################################################
-
+#
+# Modified by: Filip Katulski <filip.katulski@cern.ch>, ATLAS, CERN
+#
 #==============================================================================
 # Utility functions
 #==============================================================================
