@@ -1,5 +1,5 @@
 # k8s-bench-suite
-Bash and Python scripts collection to benchmark Kubernetes cluster performance. Modified to meet ATLAS P1 Kubernetes cluster's demands by me, FilipKatulski during my during my cooperation with EP-ADT-DQ group at ATLAS project, CERN.
+Bash and Python scripts collection to benchmark Kubernetes cluster performance. Modified to meet ATLAS P1 Kubernetes cluster's demands by me, FilipKatulski, during my cooperation with EP-ADT-DQ group at ATLAS project, CERN.
 
 The creator of the original version is Alexis Ducastel <alexis@infrabuilder.com>, which can be found [here](https://github.com/InfraBuilder/k8s-bench-suite).
 
